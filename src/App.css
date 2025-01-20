@@ -1,0 +1,40 @@
+/* App.css */
+
+/* Definindo o fundo da página */
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilo para o header */
+header img {
+    max-width: 200px;
+}
+
+header h1 {
+    font-weight: bold;
+}
+
+header p {
+    font-size: 1.2rem;
+    color: #6c757d;
+}
+
+/* Estilo dos cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card img {
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Ajustando o botão */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+}
