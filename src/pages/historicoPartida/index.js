@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
+import Navbar from "../../components/navbar";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
@@ -35,43 +36,104 @@ const HistoricoPartidas = () => {
         fetchHistorico();
     }, []);
 
-    return (
-        <div>
-            <h2>Histórico de Partidas</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+    // Função para agrupar partidas por turno
+    const groupByTurn = (matches) => {
+        return matches.reduce((acc, match) => {
+            const turno = match.turno === 1 ? "Turno 1" : "Turno 2";
+            if (!acc[turno]) {
+                acc[turno] = [];
+            }
+            acc[turno].push(match);
+            return acc;
+        }, {});
+    };
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rodada</th>
-                        <th>Jogador 1</th>
-                        <th>Jogador 2</th>
-                        <th>Gols Jogador 1</th>
-                        <th>Gols Jogador 2</th>
-                        <th>Resultado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {historico.length === 0 ? (
-                        <tr>
-                            <td colSpan="6">Não há partidas finalizadas para exibir.</td>
-                        </tr>
-                    ) : (
-                        historico.map((match) => (
-                            <tr key={match.id}>
-                                <td>{match.round}</td>
-                                <td>{match.player1}</td>
-                                <td>{match.player2}</td>
-                                <td>{match.player1Goals}</td>
-                                <td>{match.player2Goals}</td>
-                                <td>{match.player1Goals > match.player2Goals ? match.player1 : match.player1Goals < match.player2Goals ? match.player2 : "EMPATE"}
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
+    // Agrupa as partidas por turno
+    const groupedMatches = groupByTurn(historico);
+
+    return (
+        <>
+            <Navbar />
+
+            <div>
+                <h2>Histórico de Partidas</h2>
+                {error && <p style={{ color: "red" }}>{error}</p>}
+
+                {/* Exibe partidas do Turno 1 */}
+                {groupedMatches["Turno 1"] && groupedMatches["Turno 1"].length > 0 && (
+                    <>
+                        <h3>Turno 1</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rodada</th>
+                                    <th>Jogador 1</th>
+                                    <th>Jogador 2</th>
+                                    <th>Gols Jogador 1</th>
+                                    <th>Gols Jogador 2</th>
+                                    <th>Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedMatches["Turno 1"].map((match) => (
+                                    <tr key={match.id}>
+                                        <td>{match.round + 1}</td>
+                                        <td>{match.player1}</td>
+                                        <td>{match.player2}</td>
+                                        <td>{match.player1Goals}</td>
+                                        <td>{match.player2Goals}</td>
+                                        <td>
+                                            {match.player1Goals > match.player2Goals
+                                                ? match.player1
+                                                : match.player1Goals < match.player2Goals
+                                                    ? match.player2
+                                                    : "EMPATE"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </>
+                )}
+
+                {/* Exibe partidas do Turno 2 */}
+                {groupedMatches["Turno 2"] && groupedMatches["Turno 2"].length > 0 && (
+                    <>
+                        <h3>Turno 2</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rodada</th>
+                                    <th>Jogador 1</th>
+                                    <th>Jogador 2</th>
+                                    <th>Gols Jogador 1</th>
+                                    <th>Gols Jogador 2</th>
+                                    <th>Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {groupedMatches["Turno 2"].map((match) => (
+                                    <tr key={match.id}>
+                                        <td>{match.round + 1}</td>
+                                        <td>{match.player1}</td>
+                                        <td>{match.player2}</td>
+                                        <td>{match.player1Goals}</td>
+                                        <td>{match.player2Goals}</td>
+                                        <td>
+                                            {match.player1Goals > match.player2Goals
+                                                ? match.player1
+                                                : match.player1Goals < match.player2Goals
+                                                    ? match.player2
+                                                    : "EMPATE"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </>
+                )}
+            </div>
+        </>
     );
 };
 

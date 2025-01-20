@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDocs, deleteDoc, collection } from "firebase/firestore";
 import { db } from "../../firebase";
 import { Link } from "react-router-dom";
+import Navbar from "../../components/navbar";
 
 const CadastroJogadores = () => {
     const [name, setName] = useState("");
@@ -75,47 +76,61 @@ const CadastroJogadores = () => {
     }, []);
 
     return (
-        <div>
-            <h1>Cadastro de Jogadores</h1>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    savePlayer(name);
-                }}
-            >
-                <div>
-                    <label htmlFor="name">Nome do Jogador:</label>
-                    <input
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Digite o nome do jogador"
-                        required
-                    />
+        <>
+            <Navbar />
+
+            <div className="container mt-5">
+                <h1 className="mb-4">Cadastro de Jogadores</h1>
+
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        savePlayer(name);
+                    }}
+                    className="mb-4"
+                >
+                    <div className="mb-3">
+                        <label htmlFor="name" className="form-label">
+                            Nome do Jogador:
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            className="form-control"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Digite o nome do jogador"
+                            required
+                        />
+                    </div>
+                    {error && <p className="text-danger">{error}</p>}
+                    <button type="submit" className="btn btn-primary">Cadastrar Jogador</button>
+                </form>
+
+                <h2 className="mb-4">Jogadores Cadastrados</h2>
+                {players.length === 0 ? (
+                    <p>Nenhum jogador cadastrado.</p>
+                ) : (
+                    <ul className="list-group">
+                        {players.map((player) => (
+                            <li key={player.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                {player.name}
+                                <button
+                                    onClick={() => deletePlayer(player.id)}
+                                    className="btn btn-danger btn-sm"
+                                >
+                                    Excluir
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
+                <div className="mt-3">
+                    <Link to="/SorteioConfrontos" className="btn btn-link">Sorteio</Link>
                 </div>
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                <button type="submit">Cadastrar Jogador</button>
-            </form>
-
-            <h2>Jogadores Cadastrados</h2>
-            {players.length === 0 ? (
-                <p>Nenhum jogador cadastrado.</p>
-            ) : (
-                <ul>
-                    {players.map((player) => (
-                        <li key={player.id}>
-                            {player.name}
-                            <button onClick={() => deletePlayer(player.id)} style={{ marginLeft: "10px" }}>
-                                Excluir
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
-
-            <Link to='/SorteioConfrontos'>Sorteio</Link>
-        </div>
+            </div>
+        </>
     );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { doc, setDoc, getDocs, deleteDoc, collection, updateDoc, addDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import Navbar from "../../components/navbar";
 
 const SorteioConfrontos = () => {
     const [error, setError] = useState("");
@@ -64,7 +65,7 @@ const SorteioConfrontos = () => {
     };
 
     // Função para salvar os confrontos no Firebase
-    const saveMatch = async (player1, player2, roundIndex) => {
+    const saveMatch = async (player1, player2, roundIndex, turno) => {
         try {
             // Verificar se algum dos jogadores é fictício e não salvar esse confronto
             if (player1.name === "Fictício" || player2.name === "Fictício") {
@@ -79,6 +80,7 @@ const SorteioConfrontos = () => {
                 player2: player2.name,
                 idPlayer2: player2.id,
                 round: roundIndex,
+                turno: turno, // Armazena o turno (1 ou 2)
                 player1Goals: 0,
                 player2Goals: 0,
                 result: "pending", // Inicialmente o resultado é "pendente"
@@ -97,12 +99,30 @@ const SorteioConfrontos = () => {
 
         console.log(`Total de confrontos a serem salvos: ${totalMatches}`);
 
-        for (const [roundIndex, round] of rounds.entries()) {
+        // Divida as rodadas em dois turnos
+        const firstTurnRounds = rounds.slice(0, rounds.length / 2);
+        const secondTurnRounds = rounds.slice(rounds.length / 2);
+
+        // Salvar confrontos do primeiro turno
+        for (const [roundIndex, round] of firstTurnRounds.entries()) {
             for (const match of round) {
-                // Apenas salva os confrontos válidos
                 if (match[0].name !== "Fictício" && match[1].name !== "Fictício") {
                     console.log(`Salvando confronto: ${match[0].name} vs ${match[1].name} (Rodada ${roundIndex + 1})`);
-                    await saveMatch(match[0], match[1], roundIndex);
+                    await saveMatch(match[0], match[1], roundIndex, 1); // Passa 1 para indicar que é do primeiro turno
+                    matchesSavedCount += 1;
+                    validMatchesCount += 1; // Incrementa o contador de confrontos válidos
+                } else {
+                    console.log(`Ignorando confronto com jogador fictício: ${match[0].name} vs ${match[1].name}`);
+                }
+            }
+        }
+
+        // Salvar confrontos do segundo turno
+        for (const [roundIndex, round] of secondTurnRounds.entries()) {
+            for (const match of round) {
+                if (match[0].name !== "Fictício" && match[1].name !== "Fictício") {
+                    console.log(`Salvando confronto: ${match[0].name} vs ${match[1].name} (Rodada ${roundIndex + 1})`);
+                    await saveMatch(match[0], match[1], roundIndex + firstTurnRounds.length, 2); // Passa 2 para indicar que é do segundo turno
                     matchesSavedCount += 1;
                     validMatchesCount += 1; // Incrementa o contador de confrontos válidos
                 } else {
@@ -124,8 +144,6 @@ const SorteioConfrontos = () => {
             console.log("Alguns confrontos não foram salvos.");
         }
     };
-
-
 
     // Função para apagar todos os confrontos da coleção
     const deleteAllMatches = async () => {
@@ -154,57 +172,62 @@ const SorteioConfrontos = () => {
     }, [players]);
 
     return (
-        <div>
-            <h2>Partidas Sorteadas</h2>
-            {rounds.length === 0 ? (
-                <p>Não há partidas sorteadas.</p>
-            ) : (
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    {/* Exibindo Turno 1 e Turno 2 lado a lado */}
-                    <div style={{ width: "48%" }}>
-                        <h3>Turno 1</h3>
-                        {rounds.slice(0, rounds.length / 2).map((round, index) => (
-                            <div key={index}>
-                                <h4>Rodada {index + 1}</h4>
-                                <ul>
-                                    {round.map((match, i) => (
-                                        <li key={i}>
-                                            {match[0].name} vs {match[1].name}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                    </div>
+        <>
+            <Navbar />
 
-                    <div style={{ width: "48%" }}>
-                        <h3>Turno 2</h3>
-                        {rounds.slice(rounds.length / 2).map((round, index) => (
-                            <div key={index}>
-                                <h4>Rodada {index + 1}</h4>
-                                <ul>
-                                    {round.map((match, i) => (
-                                        <li key={i}>
-                                            {match[0].name} vs {match[1].name}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
+            <div className="container mt-5 text-center">
+                <h2 className="mb-4">Partidas Sorteadas</h2>
+
+                {rounds.length === 0 ? (
+                    <p>Não há partidas sorteadas.</p>
+                ) : (
+                    <div className="d-flex flex-wrap justify-content-center gap-5 text-center">
+                        {/* Exibindo Turno 1 e Turno 2 lado a lado */}
+                        <div className="w-48">
+                            <h3 className="mb-4">Turno 1</h3>
+                            {rounds.slice(0, rounds.length / 2).map((round, index) => (
+                                <div key={index} className="mb-4">
+                                    <h4>Rodada {index + 1}</h4>
+                                    <ul className="list-group">
+                                        {round.map((match, i) => (
+                                            <li key={i} className="list-group-item">
+                                                {match[0].name} vs {match[1].name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="w-48">
+                            <h3 className="mb-4">Turno 2</h3>
+                            {rounds.slice(rounds.length / 2).map((round, index) => (
+                                <div key={index} className="mb-4">
+                                    <h4>Rodada {index + 1}</h4>
+                                    <ul className="list-group">
+                                        {round.map((match, i) => (
+                                            <li key={i} className="list-group-item">
+                                                {match[0].name} vs {match[1].name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
                     </div>
+                )}
+
+                {/* Botões para salvar e apagar confrontos */}
+                <div className="mt-4 d-flex flex-column gap-3">
+                    <button onClick={saveAllMatches} className="btn btn-primary me-3">
+                        Salvar Todos os Confrontos
+                    </button>
+                    <button onClick={deleteAllMatches} className="btn btn-danger">
+                        Apagar Todos os Confrontos
+                    </button>
                 </div>
-            )}
-
-            {/* Botão para salvar todos os confrontos de uma vez */}
-            <button onClick={saveAllMatches} style={{ marginTop: "20px" }}>
-                Salvar Todos os Confrontos
-            </button>
-
-            {/* Botão para apagar todos os confrontos */}
-            <button onClick={deleteAllMatches} style={{ marginTop: "20px", backgroundColor: "red", color: "white" }}>
-                Apagar Todos os Confrontos
-            </button>
-        </div>
+            </div>
+        </>
     );
 };
 
