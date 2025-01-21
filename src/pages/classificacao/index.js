@@ -40,47 +40,51 @@ const Classificacao = () => {
         <>
             <Navbar />
 
-            <div>
-                <h2>Classificação</h2>
-                {error && <p style={{ color: "red" }}>{error}</p>}
+            <div className="container mt-4">
+                <h2 className="mb-4 text-center">Classificação</h2>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Posição</th>
-                            <th>Nome</th>
-                            <th>Vitórias</th>
-                            <th>Empates</th>
-                            <th>Derrotas</th>
-                            <th>Gols a Favor</th>
-                            <th>Gols Contra</th>
-                            <th>Saldo de Gols</th>
-                            <th>Pontos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {players.length === 0 ? (
+                {error && <p className="text-danger text-center">{error}</p>}
+
+                <div className="table-responsive">
+                    <table className="table table-striped table-bordered mt-3">
+                        <thead className="thead-dark">
                             <tr>
-                                <td colSpan="9">Não há jogadores para exibir.</td>
+                                <th className="text-center align-middle">Posição</th>
+                                <th className="text-center align-middle">Nome</th>
+                                <th className="text-center align-middle">Vitórias</th>
+                                <th className="text-center align-middle">Empates</th>
+                                <th className="text-center align-middle">Derrotas</th>
+                                <th className="text-center align-middle">Gols a Favor</th>
+                                <th className="text-center align-middle">Gols Contra</th>
+                                <th className="text-center align-middle">Saldo de Gols</th>
+                                <th className="text-center align-middle">Pontos</th>
                             </tr>
-                        ) : (
-                            players.map((player, index) => (
-                                <tr key={player.id}>
-                                    <td>{index + 1}</td> {/* Posição na tabela */}
-                                    <td>{player.name}</td>
-                                    <td>{player.wins}</td>
-                                    <td>{player.draws}</td>
-                                    <td>{player.losses}</td>
-                                    <td>{player.goalsFor}</td>
-                                    <td>{player.goalsAgainst}</td>
-                                    <td>{player.goalDifference}</td>
-                                    <td>{player.points}</td>
+                        </thead>
+                        <tbody>
+                            {players.length === 0 ? (
+                                <tr>
+                                    <td colSpan="9" className="text-center">Não há jogadores para exibir.</td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                players.map((player, index) => (
+                                    <tr key={player.id}>
+                                        <td className="text-center align-middle">{index + 1}</td> {/* Posição na tabela */}
+                                        <td className="text-center align-middle">{player.name}</td>
+                                        <td className="text-center align-middle">{player.wins}</td>
+                                        <td className="text-center align-middle">{player.draws}</td>
+                                        <td className="text-center align-middle">{player.losses}</td>
+                                        <td className="text-center align-middle">{player.goalsFor}</td>
+                                        <td className="text-center align-middle">{player.goalsAgainst}</td>
+                                        <td className="text-center align-middle">{player.goalDifference}</td>
+                                        <td className="text-center align-middle">{player.points}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </>
     );
 };

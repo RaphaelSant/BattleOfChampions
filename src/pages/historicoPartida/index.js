@@ -55,84 +55,91 @@ const HistoricoPartidas = () => {
         <>
             <Navbar />
 
-            <div>
-                <h2>Histórico de Partidas</h2>
-                {error && <p style={{ color: "red" }}>{error}</p>}
+            <div className="container mt-4 text-center">
+                <h2 className="mb-4">Histórico de Partidas</h2>
+
+                {error && <p className="text-danger">{error}</p>}
 
                 {/* Exibe partidas do Turno 1 */}
                 {groupedMatches["Turno 1"] && groupedMatches["Turno 1"].length > 0 && (
                     <>
-                        <h3>Turno 1</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Rodada</th>
-                                    <th>Jogador 1</th>
-                                    <th>Jogador 2</th>
-                                    <th>Gols Jogador 1</th>
-                                    <th>Gols Jogador 2</th>
-                                    <th>Resultado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {groupedMatches["Turno 1"].map((match) => (
-                                    <tr key={match.id}>
-                                        <td>{match.round + 1}</td>
-                                        <td>{match.player1}</td>
-                                        <td>{match.player2}</td>
-                                        <td>{match.player1Goals}</td>
-                                        <td>{match.player2Goals}</td>
-                                        <td>
-                                            {match.player1Goals > match.player2Goals
-                                                ? match.player1
-                                                : match.player1Goals < match.player2Goals
-                                                    ? match.player2
-                                                    : "EMPATE"}
-                                        </td>
+                        <h3 className="mt-4">Turno 1</h3>
+                        <div className="table-responsive">
+                            <table className="table table-striped table-bordered mt-3">
+                                <thead className="thead-dark">
+                                    <tr>
+                                        <th className="align-middle">Rodada</th>
+                                        <th className="align-middle">Jogador 1</th>
+                                        <th className="align-middle">Jogador 2</th>
+                                        <th className="align-middle">Gols Jogador 1</th>
+                                        <th className="align-middle">Gols Jogador 2</th>
+                                        <th className="align-middle">Resultado</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {groupedMatches["Turno 1"].map((match) => (
+                                        <tr key={match.id}>
+                                            <td>{match.round + 1}</td>
+                                            <td>{match.player1}</td>
+                                            <td>{match.player2}</td>
+                                            <td>{match.player1Goals}</td>
+                                            <td>{match.player2Goals}</td>
+                                            <td>
+                                                {match.player1Goals > match.player2Goals
+                                                    ? match.player1
+                                                    : match.player1Goals < match.player2Goals
+                                                        ? match.player2
+                                                        : "EMPATE"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </>
                 )}
 
                 {/* Exibe partidas do Turno 2 */}
                 {groupedMatches["Turno 2"] && groupedMatches["Turno 2"].length > 0 && (
                     <>
-                        <h3>Turno 2</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Rodada</th>
-                                    <th>Jogador 1</th>
-                                    <th>Jogador 2</th>
-                                    <th>Gols Jogador 1</th>
-                                    <th>Gols Jogador 2</th>
-                                    <th>Resultado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {groupedMatches["Turno 2"].map((match) => (
-                                    <tr key={match.id}>
-                                        <td>{match.round + 1}</td>
-                                        <td>{match.player1}</td>
-                                        <td>{match.player2}</td>
-                                        <td>{match.player1Goals}</td>
-                                        <td>{match.player2Goals}</td>
-                                        <td>
-                                            {match.player1Goals > match.player2Goals
-                                                ? match.player1
-                                                : match.player1Goals < match.player2Goals
-                                                    ? match.player2
-                                                    : "EMPATE"}
-                                        </td>
+                        <h3 className="mt-4">Turno 2</h3>
+                        <div className="table-responsive">
+                            <table className="table table-striped table-bordered mt-3">
+                                <thead className="thead-dark">
+                                    <tr>
+                                        <th className="align-middle">Rodada</th>
+                                        <th className="align-middle">Jogador 1</th>
+                                        <th className="align-middle">Jogador 2</th>
+                                        <th className="align-middle">Gols Jogador 1</th>
+                                        <th className="align-middle">Gols Jogador 2</th>
+                                        <th className="align-middle">Resultado</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {groupedMatches["Turno 2"].map((match) => (
+                                        <tr key={match.id}>
+                                            <td>{match.round + 1}</td>
+                                            <td>{match.player1}</td>
+                                            <td>{match.player2}</td>
+                                            <td>{match.player1Goals}</td>
+                                            <td>{match.player2Goals}</td>
+                                            <td>
+                                                {match.player1Goals > match.player2Goals
+                                                    ? match.player1
+                                                    : match.player1Goals < match.player2Goals
+                                                        ? match.player2
+                                                        : "EMPATE"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </>
                 )}
             </div>
+
+
         </>
     );
 };

@@ -43,7 +43,7 @@ const Home = () => {
                     <div className="col">
                         <div className="card shadow-sm">
                             <img
-                                src="https://www.gamers-shop.dk/images/game_img/screenshots/pes2013/ss_e9023d31296990f1e767924533d6138d9c11c139.1920x1080.jpg"
+                                src="https://s2-techtudo.glbimg.com/x6ULX5HlgCeLToQCzOUAH6SsNl8=/0x0:620x353/600x0/smart/filters:gifv():strip_icc()/i.s3.glbimg.com/v1/AUTH_08fbf48bc0524877943fe86e43087e7a/internal_photos/bs/2021/B/M/N9NHJ8R2eUoqoN9BiPkw/2012-08-22-pes20131.jpg"
                                 className="card-img-top"
                                 alt="Sorteio de Confrontos"
                             />
@@ -62,7 +62,7 @@ const Home = () => {
                     <div className="col">
                         <div className="card shadow-sm">
                             <img
-                                src="https://i.ytimg.com/vi/sSLn-x508YU/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLA26adTGCpXod35t2K96Gl2O4Vr5w"
+                                src="https://www.gamers-shop.dk/images/game_img/screenshots/pes2013/ss_98d225534aacb4f80f845c4e9df6c9dec327f3c7.1920x1080.jpg"
                                 className="card-img-top"
                                 alt="Inserir Resultados"
                             />
@@ -81,7 +81,7 @@ const Home = () => {
                     <div className="col">
                         <div className="card shadow-sm">
                             <img
-                                src="https://www.gamers-shop.dk/images/game_img/screenshots/pes2013/ss_98d225534aacb4f80f845c4e9df6c9dec327f3c7.1920x1080.jpg"
+                                src="https://steamuserimages-a.akamaihd.net/ugc/820063037364283687/A8FBBE94AAE593E2170D1A03276E50A789275C32/?imw=1024&&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false"
                                 className="card-img-top"
                                 alt="Histórico de Partidas"
                             />
@@ -100,7 +100,7 @@ const Home = () => {
                     <div className="col">
                         <div className="card shadow-sm">
                             <img
-                                src="https://s2-techtudo.glbimg.com/x6ULX5HlgCeLToQCzOUAH6SsNl8=/0x0:620x353/600x0/smart/filters:gifv():strip_icc()/i.s3.glbimg.com/v1/AUTH_08fbf48bc0524877943fe86e43087e7a/internal_photos/bs/2021/B/M/N9NHJ8R2eUoqoN9BiPkw/2012-08-22-pes20131.jpg"
+                                src="https://www.gamers-shop.dk/images/game_img/screenshots/pes2013/ss_e9023d31296990f1e767924533d6138d9c11c139.1920x1080.jpg"
                                 className="card-img-top"
                                 alt="Classificação"
                             />
