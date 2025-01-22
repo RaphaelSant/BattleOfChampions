@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { getDocs, deleteDoc, collection, addDoc } from "firebase/firestore";
+import React, { useState, useEffect, useCallback } from "react";
+import { getDocs, collection, addDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
 
 const SorteioConfrontos = () => {
-    const [error, setError] = useState("");
+    // const [error, setError] = useState("");
     const [players, setPlayers] = useState([]); // Estado para armazenar os jogadores cadastrados
     const [rounds, setRounds] = useState([]); // Estado para armazenar as rodadas com partidas
-    const [matchResults, setMatchResults] = useState({}); // Estado para armazenar os placares dos jogos
-    const [allMatchesSaved, setAllMatchesSaved] = useState(false); // Estado para controlar se todos os confrontos foram salvos
+    // const [matchResults, setMatchResults] = useState({}); // Estado para armazenar os placares dos jogos
+    // const [allMatchesSaved, setAllMatchesSaved] = useState(false); // Estado para controlar se todos os confrontos foram salvos
     const [loading, setLoading] = useState(false); // Controle de carregamento
 
     // Função para buscar jogadores do Firestore
@@ -24,7 +24,7 @@ const SorteioConfrontos = () => {
             setPlayers(playersList); // Atualiza a lista de jogadores
         } catch (error) {
             console.error("Erro ao buscar jogadores:", error);
-            setError("Erro ao carregar os jogadores. Tente novamente.");
+            // setError("Erro ao carregar os jogadores. Tente novamente.");
             Swal.fire({
                 icon: "error",
                 title: "Erro!",
@@ -64,15 +64,15 @@ const SorteioConfrontos = () => {
     };
 
     // Função para criar Turno e Returno
-    const generateTurnoReturno = (players) => {
+    const generateTurnoReturno = useCallback((players) => {
         const firstTurnRounds = generateRoundRobin(players);
-
+    
         const secondTurnRounds = firstTurnRounds.map(round =>
             round.map(match => [match[1], match[0]]) // Inverte os confrontos para o segundo turno
         );
-
+    
         return [...firstTurnRounds, ...secondTurnRounds];
-    };
+    }, []); // Não há dependências adicionais aqui, pois a função não depende de variáveis externas
 
     // Função para embaralhar as rodadas
     const reshuffleMatches = () => {
@@ -159,7 +159,7 @@ const SorteioConfrontos = () => {
         setLoading(false); // Finaliza o spinner
 
         if (matchesSavedCount === validMatchesCount) {
-            setAllMatchesSaved(true);
+            // setAllMatchesSaved(true);
             console.log("Todos os confrontos válidos foram salvos.");
             Swal.fire({
                 icon: "success",
@@ -230,7 +230,8 @@ const SorteioConfrontos = () => {
             const roundsWithTurnoReturno = generateTurnoReturno(players);
             setRounds(roundsWithTurnoReturno); // Atualiza as rodadas com turno e returno
         }
-    }, [players]);
+    }, [players, generateTurnoReturno]); // Inclua 'generateTurnoReturno' nas dependências
+
 
     return (
         <>

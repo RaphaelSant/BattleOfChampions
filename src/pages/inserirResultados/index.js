@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { doc, getDocs, updateDoc, collection, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
@@ -11,7 +11,32 @@ const InserirResultados = () => {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);  // Adiciona o estado de carregamento
 
-    const fetchMatches = async () => {
+    const groupByRound = useCallback((matches) => {
+        return matches.reduce((acc, match) => {
+            if (!acc[match.round]) acc[match.round] = [];
+            acc[match.round].push(match);
+            return acc;
+        }, {});
+    }, []); // Dependências vazias, pois a função não depende de nenhum estado ou props
+
+    const groupMatchesByTurnAndRound = useCallback((matches) => {
+        const grouped = { turno1: [], turno2: [] };
+
+        matches.forEach((match) => {
+            if (match.turno === 1) {
+                grouped.turno1.push(match);
+            } else if (match.turno === 2) {
+                grouped.turno2.push(match);
+            }
+        });
+
+        grouped.turno1 = groupByRound(grouped.turno1);  // Se groupByRound for uma função externa, use useCallback nela também
+        grouped.turno2 = groupByRound(grouped.turno2);
+
+        return grouped;
+    }, [groupByRound]);  // Adiciona 'groupByRound' à lista de dependências se necessário
+
+    const fetchMatches = useCallback(async () => {
         try {
             const querySnapshot = await getDocs(collection(db, "matches"));
             const matchesList = [];
@@ -27,32 +52,9 @@ const InserirResultados = () => {
             console.error("Erro ao buscar confrontos:", error);
             setError("Erro ao carregar os confrontos. Tente novamente.");
         }
-    };
+    }, [groupMatchesByTurnAndRound]); // Aqui você pode adicionar as dependências de qualquer coisa que a função use (se necessário)
 
-    const groupMatchesByTurnAndRound = (matches) => {
-        const grouped = { turno1: [], turno2: [] };
-
-        matches.forEach((match) => {
-            if (match.turno === 1) {
-                grouped.turno1.push(match);
-            } else if (match.turno === 2) {
-                grouped.turno2.push(match);
-            }
-        });
-
-        grouped.turno1 = groupByRound(grouped.turno1);
-        grouped.turno2 = groupByRound(grouped.turno2);
-
-        return grouped;
-    };
-
-    const groupByRound = (matches) => {
-        return matches.reduce((acc, match) => {
-            if (!acc[match.round]) acc[match.round] = [];
-            acc[match.round].push(match);
-            return acc;
-        }, {});
-    };
+    
 
     const loadMatch = (index, turno, round) => {
         if (turno === 1) {
@@ -193,7 +195,7 @@ const InserirResultados = () => {
 
     useEffect(() => {
         fetchMatches();
-    }, []);
+    }, [fetchMatches]); // Adiciona fetchMatches como dependência
 
     return (
         <>
@@ -276,7 +278,9 @@ const InserirResultados = () => {
 
                 <div className="mt-5">
                     <h3 className="mb-4">Lista de Confrontos Pendentes</h3>
-                    {matches.length === 0 || (!matches.turno1 || Object.keys(matches.turno1).length === 0) && (!matches.turno2 || Object.keys(matches.turno2).length === 0) ? (
+                    {matches.length === 0 ||
+                        ((!matches.turno1 || Object.keys(matches.turno1).length === 0) &&
+                            (!matches.turno2 || Object.keys(matches.turno2).length === 0)) ? (
                         <p>Não há confrontos pendentes para exibir.</p>
                     ) : (
                         <>
@@ -329,6 +333,7 @@ const InserirResultados = () => {
                             )}
                         </>
                     )}
+
                 </div>
             </div>
         </>

@@ -19,12 +19,15 @@ const Navbar = () => {
                 const userSnap = await getDoc(userDoc);
                 if (userSnap.exists()) {
                     setUserName(userSnap.data().nome); // Supondo que o nome esteja na coleção de usuários
+
                     setUserEmail(user.email); // Pegando o email do usuário
                 }
             };
             getUserData();
         }
     }, []);
+
+    console.log(userName);
 
     const handleLogout = () => {
         signOut(auth)
@@ -140,16 +143,14 @@ const Navbar = () => {
 
                         {/* Dropdown Sistema */}
                         <li className="nav-item dropdown">
-                            <a
+                            <button
                                 className="nav-link dropdown-toggle"
-                                href="#"
-                                id="navbarDropdownSistema"
-                                role="button"
+                                id="navbarDropdown"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
                                 Sistema
-                            </a>
+                            </button>
                             <ul className="dropdown-menu" aria-labelledby="navbarDropdownSistema">
                                 <li>
                                     <button
@@ -164,16 +165,14 @@ const Navbar = () => {
 
                         {/* Dropdown Usuários */}
                         <li className="nav-item dropdown">
-                            <a
+                            <button
                                 className="nav-link dropdown-toggle"
-                                href="#"
                                 id="navbarDropdown"
-                                role="button"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
-                                Usuários
-                            </a>
+                                Usuarios
+                            </button>
                             <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <li>
                                     <button className="dropdown-item" onClick={handlePasswordChange}>

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { auth } from "../../firebase";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import Logo from "../../components/assets/logo.png";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isSignUp, setIsSignUp] = useState(false);
+    //const [isSignUp, setIsSignUp] = useState(false);
 
     const handleLogin = () => {
         signInWithEmailAndPassword(auth, email, password)
@@ -18,6 +18,7 @@ const Login = () => {
             .catch((error) => alert(error.message));
     };
 
+    /*
     const handleSignUp = () => {
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
@@ -25,7 +26,7 @@ const Login = () => {
                 alert('Login com sucesso')
             })
             .catch((error) => alert(error.message));
-    };
+    }; */
 
     return (
         <div
@@ -44,7 +45,7 @@ const Login = () => {
                 </div>
 
                 {/* Formulário */}
-                <h2 className="text-center mb-4">{isSignUp ? "Sign Up" : "Login"}</h2>
+                <h2 className="text-center mb-4">Login</h2>
 
                 <input
                     type="email"
@@ -61,15 +62,15 @@ const Login = () => {
                     placeholder="Password"
                     className="form-control mb-3"
                 />
-
+                {
                 <button
-                    onClick={isSignUp ? handleSignUp : handleLogin}
+                    onClick={handleLogin}
                     className="btn btn-primary w-100 mb-3"
                 >
-                    {isSignUp ? "Sign Up" : "Login"}
+                    Login
                 </button>
 
-                {/* 
+                /* 
                 <button
                     onClick={() => setIsSignUp(!isSignUp)}
                     className="btn btn-link w-100"
