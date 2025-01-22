@@ -83,6 +83,11 @@ const Navbar = () => {
                     text: "Todos os dados foram apagados com sucesso.",
                     icon: "success",
                 });
+
+                // Redireciona para a página inicial, atualizando a página
+                window.location.href = "/Home"; // Redireciona para a página inicial
+
+
             } catch (error) {
                 console.error("Erro ao resetar o sistema: ", error);
                 await Swal.fire({

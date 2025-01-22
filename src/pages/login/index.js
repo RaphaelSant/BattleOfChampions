@@ -1,32 +1,35 @@
 import React, { useState } from "react";
 import { auth } from "../../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import Swal from "sweetalert2"; // Importando o SweetAlert2
 import Logo from "../../components/assets/logo.png";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    //const [isSignUp, setIsSignUp] = useState(false);
 
     const handleLogin = () => {
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                // Redirecionar para o próximo componente
-                alert('Login com sucesso')
-                window.location.href = "/CadastroJogadores";
+                // Exibe o SweetAlert2 de sucesso
+                Swal.fire({
+                    title: 'Login realizado com sucesso!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = "/Home";
+                });
             })
-            .catch((error) => alert(error.message));
+            .catch((error) => {
+                // Exibe o SweetAlert2 de erro
+                Swal.fire({
+                    title: 'Erro ao realizar login',
+                    text: error.message,
+                    icon: 'error',
+                    confirmButtonText: 'Tentar novamente'
+                });
+            });
     };
-
-    /*
-    const handleSignUp = () => {
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Redirecionar para o próximo componente
-                alert('Login com sucesso')
-            })
-            .catch((error) => alert(error.message));
-    }; */
 
     return (
         <div
@@ -62,26 +65,14 @@ const Login = () => {
                     placeholder="Password"
                     className="form-control mb-3"
                 />
-                {
                 <button
                     onClick={handleLogin}
                     className="btn btn-primary w-100 mb-3"
                 >
                     Login
                 </button>
-
-                /* 
-                <button
-                    onClick={() => setIsSignUp(!isSignUp)}
-                    className="btn btn-link w-100"
-                >
-                    {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
-                </button>
-                */}
             </div>
         </div>
-
-
     );
 };
 
