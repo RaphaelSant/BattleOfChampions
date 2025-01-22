@@ -6,6 +6,7 @@ import Navbar from "../../components/navbar";
 const Classificacao = () => {
     const [players, setPlayers] = useState([]); // Estado para armazenar os jogadores
     const [error, setError] = useState(""); // Para mostrar possíveis erros
+    const [isLoading, setIsLoading] = useState(true); // Estado para controle de carregamento
 
     // Função para buscar os jogadores da coleção 'players'
     const fetchPlayers = async () => {
@@ -28,6 +29,8 @@ const Classificacao = () => {
         } catch (error) {
             console.error("Erro ao buscar jogadores:", error);
             setError("Erro ao carregar a classificação. Tente novamente.");
+        } finally {
+            setIsLoading(false); // Finaliza o carregamento
         }
     };
 
@@ -45,46 +48,54 @@ const Classificacao = () => {
 
                 {error && <p className="text-danger text-center">{error}</p>}
 
-                <div className="table-responsive">
-                    <table className="table table-striped table-bordered mt-3">
-                        <thead className="thead-dark">
-                            <tr>
-                                <th className="text-center align-middle">Posição</th>
-                                <th className="text-center align-middle">Nome</th>
-                                <th className="text-center align-middle">Vitórias</th>
-                                <th className="text-center align-middle">Empates</th>
-                                <th className="text-center align-middle">Derrotas</th>
-                                <th className="text-center align-middle">Gols a Favor</th>
-                                <th className="text-center align-middle">Gols Contra</th>
-                                <th className="text-center align-middle">Saldo de Gols</th>
-                                <th className="text-center align-middle">Pontos</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {players.length === 0 ? (
+                {/* Spinner exibido enquanto os dados estão sendo carregados */}
+                {isLoading ? (
+                    <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
+                        <div className="spinner-border text-dark" role="status">
+                            <span className="visually-hidden">Carregando...</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="table-responsive">
+                        <table className="table table-striped table-bordered mt-3">
+                            <thead className="thead-dark">
                                 <tr>
-                                    <td colSpan="9" className="text-center">Não há jogadores para exibir.</td>
+                                    <th className="text-center align-middle">Posição</th>
+                                    <th className="text-center align-middle">Nome</th>
+                                    <th className="text-center align-middle">VIT</th>
+                                    <th className="text-center align-middle">E</th>
+                                    <th className="text-center align-middle">DER</th>
+                                    <th className="text-center align-middle">GM</th>
+                                    <th className="text-center align-middle">GC</th>
+                                    <th className="text-center align-middle">SG</th>
+                                    <th className="text-center align-middle">Pts</th>
                                 </tr>
-                            ) : (
-                                players.map((player, index) => (
-                                    <tr key={player.id}>
-                                        <td className="text-center align-middle">{index + 1}</td> {/* Posição na tabela */}
-                                        <td className="text-center align-middle">{player.name}</td>
-                                        <td className="text-center align-middle">{player.wins}</td>
-                                        <td className="text-center align-middle">{player.draws}</td>
-                                        <td className="text-center align-middle">{player.losses}</td>
-                                        <td className="text-center align-middle">{player.goalsFor}</td>
-                                        <td className="text-center align-middle">{player.goalsAgainst}</td>
-                                        <td className="text-center align-middle">{player.goalDifference}</td>
-                                        <td className="text-center align-middle">{player.points}</td>
+                            </thead>
+                            <tbody>
+                                {players.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="9" className="text-center">Não há jogadores para exibir.</td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ) : (
+                                    players.map((player, index) => (
+                                        <tr key={player.id}>
+                                            <td className="text-center align-middle">{index + 1}</td> {/* Posição na tabela */}
+                                            <td className="text-center align-middle">{player.name}</td>
+                                            <td className="text-center align-middle">{player.wins}</td>
+                                            <td className="text-center align-middle">{player.draws}</td>
+                                            <td className="text-center align-middle">{player.losses}</td>
+                                            <td className="text-center align-middle">{player.goalsFor}</td>
+                                            <td className="text-center align-middle">{player.goalsAgainst}</td>
+                                            <td className="text-center align-middle">{player.goalDifference}</td>
+                                            <td className="text-center align-middle">{player.points}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
-
         </>
     );
 };

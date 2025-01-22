@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { doc, getDocs, updateDoc, collection, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
+import Swal from "sweetalert2";
 
 const InserirResultados = () => {
     const [matches, setMatches] = useState([]);
     const [matchResults, setMatchResults] = useState({ player1Goals: 0, player2Goals: 0 });
     const [currentMatch, setCurrentMatch] = useState(null);
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);  // Adiciona o estado de carregamento
 
     const fetchMatches = async () => {
         try {
@@ -99,6 +101,7 @@ const InserirResultados = () => {
 
     const saveMatchResult = async () => {
         if (currentMatch) {
+            setIsLoading(true);  // Ativa o spinner
             try {
                 const matchRef = doc(db, "matches", currentMatch.id);
                 const result = matchResults.player1Goals === matchResults.player2Goals
@@ -115,12 +118,24 @@ const InserirResultados = () => {
 
                 await updatePlayerStats(currentMatch.idPlayer1, currentMatch.idPlayer2, matchResults.player1Goals, matchResults.player2Goals);
 
-                alert("Resultado da partida salvo com sucesso!");
+                Swal.fire({
+                    icon: "success",
+                    title: "Resultado Salvo!",
+                    text: "O resultado da partida foi salvo com sucesso.",
+                });
+
                 setCurrentMatch(null);
                 fetchMatches();
             } catch (error) {
                 console.error("Erro ao salvar resultado:", error);
                 setError("Erro ao salvar o resultado da partida. Tente novamente.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Erro!",
+                    text: "Não foi possível salvar o resultado. Tente novamente.",
+                });
+            } finally {
+                setIsLoading(false);  // Desativa o spinner
             }
         }
     };
@@ -241,8 +256,18 @@ const InserirResultados = () => {
                                 </button>
                             </div>
                         </div>
-                        <button onClick={saveMatchResult} className="btn btn-lg btn-primary w-100 mt-2">
-                            Salvar Resultado
+                        <button
+                            onClick={saveMatchResult}
+                            className="btn btn-lg btn-primary w-100 mt-2"
+                            disabled={isLoading} // Desabilita o botão enquanto carrega
+                        >
+                            {isLoading ? (
+                                <div className="spinner-border text-light" role="status">
+                                    <span className="visually-hidden">Carregando...</span>
+                                </div>
+                            ) : (
+                                "Salvar Resultado"
+                            )}
                         </button>
                     </div>
                 ) : (

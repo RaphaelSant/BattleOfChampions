@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { doc, setDoc, getDocs, deleteDoc, collection, updateDoc, addDoc, getDoc } from "firebase/firestore";
+import { getDocs, deleteDoc, collection, addDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
+import Swal from "sweetalert2";
 
 const SorteioConfrontos = () => {
     const [error, setError] = useState("");
@@ -9,9 +10,11 @@ const SorteioConfrontos = () => {
     const [rounds, setRounds] = useState([]); // Estado para armazenar as rodadas com partidas
     const [matchResults, setMatchResults] = useState({}); // Estado para armazenar os placares dos jogos
     const [allMatchesSaved, setAllMatchesSaved] = useState(false); // Estado para controlar se todos os confrontos foram salvos
+    const [loading, setLoading] = useState(false); // Controle de carregamento
 
     // Função para buscar jogadores do Firestore
     const fetchPlayers = async () => {
+        setLoading(true); // Inicia o spinner enquanto busca os jogadores
         try {
             const querySnapshot = await getDocs(collection(db, "players"));
             const playersList = [];
@@ -22,6 +25,13 @@ const SorteioConfrontos = () => {
         } catch (error) {
             console.error("Erro ao buscar jogadores:", error);
             setError("Erro ao carregar os jogadores. Tente novamente.");
+            Swal.fire({
+                icon: "error",
+                title: "Erro!",
+                text: "Não foi possível carregar os jogadores. Tente novamente.",
+            });
+        } finally {
+            setLoading(false); // Finaliza o spinner
         }
     };
 
@@ -58,10 +68,19 @@ const SorteioConfrontos = () => {
         const firstTurnRounds = generateRoundRobin(players);
 
         const secondTurnRounds = firstTurnRounds.map(round =>
-            round.map(match => [match[1], match[0]])
+            round.map(match => [match[1], match[0]]) // Inverte os confrontos para o segundo turno
         );
 
         return [...firstTurnRounds, ...secondTurnRounds];
+    };
+
+    // Função para embaralhar as rodadas
+    const reshuffleMatches = () => {
+        // Embaralha a ordem dos jogadores e gera novas rodadas
+        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5); // Embaralha os jogadores aleatoriamente
+        const newRounds = generateTurnoReturno(shuffledPlayers); // Gera as novas rodadas com os jogadores embaralhados
+        setRounds(newRounds); // Atualiza as rodadas
+        console.log("Partidas embaralhadas novamente.");
     };
 
     // Função para salvar os confrontos no Firebase
@@ -93,6 +112,7 @@ const SorteioConfrontos = () => {
 
     // Função para salvar todos os confrontos gerados
     const saveAllMatches = async () => {
+        setLoading(true); // Inicia o spinner enquanto os confrontos são salvos
         let matchesSavedCount = 0;
         const totalMatches = rounds.reduce((acc, round) => acc + round.length, 0); // Total de confrontos a serem salvos
         let validMatchesCount = 0; // Contador para confrontos válidos
@@ -136,28 +156,69 @@ const SorteioConfrontos = () => {
         console.log(`Confrontos válidos totais: ${validMatchesCount}`);
 
         // Quando todos os confrontos válidos forem salvos, dispara o alerta
+        setLoading(false); // Finaliza o spinner
+
         if (matchesSavedCount === validMatchesCount) {
             setAllMatchesSaved(true);
             console.log("Todos os confrontos válidos foram salvos.");
-            alert("Todos os confrontos foram salvos com sucesso!");
+            Swal.fire({
+                icon: "success",
+                title: "Confrontos Salvos!",
+                text: "Todos os confrontos foram salvos com sucesso.",
+            });
         } else {
             console.log("Alguns confrontos não foram salvos.");
+            Swal.fire({
+                icon: "error",
+                title: "Erro!",
+                text: "Alguns confrontos não foram salvos.",
+            });
         }
     };
 
-    // Função para apagar todos os confrontos da coleção
+    /*
+    // Função para apagar todos os confrontos da coleção com confirmação
     const deleteAllMatches = async () => {
-        try {
-            const querySnapshot = await getDocs(collection(db, "matches"));
-            querySnapshot.forEach(async (doc) => {
-                await deleteDoc(doc.ref);
-            });
-            alert("Todos os confrontos foram apagados com sucesso!");
-        } catch (error) {
-            console.error("Erro ao apagar todos os confrontos:", error);
-            alert("Erro ao apagar os confrontos. Tente novamente.");
+        // Exibe o SweetAlert de confirmação
+        const result = await Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você deseja apagar todos os confrontos?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, apagar!',
+            cancelButtonText: 'Não, cancelar',
+            reverseButtons: true, // Faz com que o botão "Cancelar" fique à esquerda
+        });
+
+        if (result.isConfirmed) {
+            // Se o usuário confirmar a exclusão
+            setLoading(true); // Inicia o spinner enquanto os confrontos são apagados
+            try {
+                const querySnapshot = await getDocs(collection(db, "matches"));
+                querySnapshot.forEach(async (doc) => {
+                    await deleteDoc(doc.ref); // Apaga os confrontos
+                });
+                setLoading(false); // Finaliza o spinner
+                Swal.fire({
+                    icon: "success",
+                    title: "Confrontos Apagados!",
+                    text: "Todos os confrontos foram apagados com sucesso.",
+                });
+            } catch (error) {
+                console.error("Erro ao apagar todos os confrontos:", error);
+                setLoading(false); // Finaliza o spinner
+                Swal.fire({
+                    icon: "error",
+                    title: "Erro!",
+                    text: "Erro ao apagar os confrontos. Tente novamente.",
+                });
+            }
+        } else {
+            // Se o usuário cancelar a ação
+            console.log("Ação de apagar confrontos foi cancelada.");
         }
     };
+    */
 
     // Carregar os jogadores e gerar as partidas quando o componente for montado
     useEffect(() => {
@@ -178,13 +239,17 @@ const SorteioConfrontos = () => {
             <div className="container mt-5 text-center">
                 <h2 className="mb-4">Partidas Sorteadas</h2>
 
-                {rounds.length === 0 ? (
+                {loading ? (
+                    <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Carregando...</span>
+                    </div>
+                ) : rounds.length === 0 ? (
                     <p>Não há partidas sorteadas.</p>
                 ) : (
-                    <div className="d-flex flex-wrap justify-content-center gap-5 text-center">
+                    <div className="d-flex flex-wrap justify-content-center gap-1 text-center">
                         {/* Exibindo Turno 1 e Turno 2 lado a lado */}
                         <div className="w-48">
-                            <h3 className="mb-4">Turno 1</h3>
+                            <h3 className="mb-4"><b>Turno 1</b></h3>
                             {rounds.slice(0, rounds.length / 2).map((round, index) => (
                                 <div key={index} className="mb-4">
                                     <h4>Rodada {index + 1}</h4>
@@ -200,7 +265,7 @@ const SorteioConfrontos = () => {
                         </div>
 
                         <div className="w-48">
-                            <h3 className="mb-4">Turno 2</h3>
+                            <h3 className="mb-4"><b>Turno 2</b></h3>
                             {rounds.slice(rounds.length / 2).map((round, index) => (
                                 <div key={index} className="mb-4">
                                     <h4>Rodada {index + 1}</h4>
@@ -219,11 +284,12 @@ const SorteioConfrontos = () => {
 
                 {/* Botões para salvar e apagar confrontos */}
                 <div className="mt-4 d-flex flex-column gap-3">
-                    <button onClick={saveAllMatches} className="btn btn-primary me-3">
+                    <button onClick={saveAllMatches} className="btn btn-lg btn-primary me-3 w-100">
                         Salvar Todos os Confrontos
                     </button>
-                    <button onClick={deleteAllMatches} className="btn btn-danger">
-                        Apagar Todos os Confrontos
+                    {/* Novo botão para embaralhar as partidas */}
+                    <button onClick={reshuffleMatches} className="btn btn-lg btn-secondary mt-3">
+                        Embaralhar Novamente
                     </button>
                 </div>
             </div>
