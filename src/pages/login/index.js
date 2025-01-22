@@ -7,15 +7,18 @@ import Logo from "../../components/assets/logo.png";
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false); // Adiciona o estado de loading
 
     const handleLogin = () => {
+        setLoading(true); // Inicia o loading ao clicar no botão
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 // Exibe o SweetAlert2 de sucesso
                 Swal.fire({
                     title: 'Login realizado com sucesso!',
                     icon: 'success',
-                    confirmButtonText: 'OK'
+                    showConfirmButton: false,
+                    timer: 1500
                 }).then(() => {
                     window.location.href = "/Home";
                 });
@@ -28,6 +31,9 @@ const Login = () => {
                     icon: 'error',
                     confirmButtonText: 'Tentar novamente'
                 });
+            })
+            .finally(() => {
+                setLoading(false); // Finaliza o loading após a requisição
             });
     };
 
@@ -65,11 +71,17 @@ const Login = () => {
                     placeholder="Password"
                     className="form-control mb-3"
                 />
+
                 <button
                     onClick={handleLogin}
                     className="btn btn-primary w-100 mb-3"
+                    disabled={loading} // Desabilita o botão enquanto está carregando
                 >
-                    Login
+                    {loading ? (
+                        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    ) : (
+                        "Login"
+                    )}
                 </button>
             </div>
         </div>

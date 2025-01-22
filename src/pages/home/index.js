@@ -1,12 +1,52 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from '../../components/assets/logo.png';
 import Navbar from "../../components/navbar";
 
 const Home = () => {
+    const [showModal, setShowModal] = useState(false); // Estado para controlar a visibilidade do modal
+
+    useEffect(() => {
+        setShowModal(true); // Exibe o modal assim que a página for carregada
+    }, []);
+
     return (
         <>
             <Navbar />
+
+            {/* Modal */}
+            {showModal && (
+                <div className="modal fade show" style={{ display: 'block', opacity: 1 }} tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title" id="exampleModalLabel">Bem-vindo ao Battle of Champions!</h5>
+                                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={() => setShowModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="text-center">Estamos felizes em ter você participando do <b>Battle of Champions</b>!</p>
+                                <p>Para começar seu torneio, siga os passos abaixo:</p>
+
+                                <ol className="ps-3">
+                                    <li><b>Cadastre os jogadores:</b> Insira os nomes dos jogadores para iniciar o campeonato.</li>
+                                    <li><b>Realize o sorteio dos confrontos:</b> Após o cadastro, sorteie os confrontos entre os jogadores de forma aleatória.</li>
+                                    <li><b>Insira os resultados:</b> A cada rodada, registre os resultados das partidas para manter a classificação atualizada.</li>
+                                    <li><b>Finalização e reset:</b> Quando o torneio terminar, na barra de navegação "Sistema", você pode resetar o sistema e iniciar um novo campeonato.</li>
+                                </ol>
+
+                                <p>Esses passos irão garantir que seu torneio aconteça de forma organizada e divertida!</p>
+
+                                <p className="text-center">Boa sorte!</p>
+                            </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowModal(false)}>Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="container-fluid">
                 {/* Header */}
                 <header className="text-center my-5">
