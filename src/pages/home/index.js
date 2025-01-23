@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from '../../components/assets/logo.png';
 import Navbar from "../../components/navbar";
+import Footer from "../../components/footer";
 
 const Home = () => {
     const [showModal, setShowModal] = useState(false); // Estado para controlar a visibilidade do modal
@@ -55,8 +56,8 @@ const Home = () => {
                         alt="Logo"
                         className="mb-4"
                     />
-                    <h1 className="display-4 text-primary">Battle of Champions</h1>
-                    <p className="lead text-muted">Welcome to the ultimate football competition!</p>
+                    <h1 className="display-4 text-success">Battle of Champions</h1>
+                    <p className="lead text-muted">Bem-vindo à melhor competição de futebol!</p>
                 </header>
 
                 {/* Cards Section */}
@@ -73,7 +74,7 @@ const Home = () => {
                                 <p className="card-text">
                                     Cadastre os jogadores para iniciar o campeonato.
                                 </p>
-                                <Link to="/CadastroJogadores" className="btn w-100 btn-primary">
+                                <Link to="/CadastroJogadores" className="btn btn-lg w-100 btn-success">
                                     Cadastrar
                                 </Link>
                             </div>
@@ -92,7 +93,7 @@ const Home = () => {
                                 <p className="card-text">
                                     Realize o sorteio dos confrontos entre os jogadores.
                                 </p>
-                                <Link to="/SorteioConfrontos" className="btn w-100 btn-primary">
+                                <Link to="/SorteioConfrontos" className="btn btn-lg w-100 btn-success">
                                     Sortear
                                 </Link>
                             </div>
@@ -111,7 +112,7 @@ const Home = () => {
                                 <p className="card-text">
                                     Insira os resultados das partidas e mantenha a pontuação atualizada.
                                 </p>
-                                <Link to="/InserirResultados" className="btn w-100 btn-primary">
+                                <Link to="/InserirResultados" className="btn btn-lg w-100 btn-success">
                                     Inserir resultados
                                 </Link>
                             </div>
@@ -130,7 +131,7 @@ const Home = () => {
                                 <p className="card-text">
                                     Acesse o histórico de todas as partidas jogadas.
                                 </p>
-                                <Link to="/HistoricoPartidas" className="btn w-100 btn-primary">
+                                <Link to="/HistoricoPartidas" className="btn btn-lg w-100 btn-success">
                                     Histórico
                                 </Link>
                             </div>
@@ -149,7 +150,7 @@ const Home = () => {
                                 <p className="card-text">
                                     Veja a classificação geral de todos os jogadores.
                                 </p>
-                                <Link to="/Classificacao" className="btn w-100 btn-primary">
+                                <Link to="/Classificacao" className="btn btn-lg w-100 btn-success">
                                     Classificação
                                 </Link>
                             </div>
@@ -157,6 +158,8 @@ const Home = () => {
                     </div>
                 </div>
             </div>
+            
+            <Footer />
         </>
     );
 };

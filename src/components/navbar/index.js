@@ -181,7 +181,7 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark bg-gradient shadow">
             <div className="container">
                 <Link className="navbar-brand" to="/Home">
                     <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', marginRight: '10px' }} />
