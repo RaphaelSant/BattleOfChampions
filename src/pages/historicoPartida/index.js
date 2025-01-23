@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
-import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
+import Navbar from "../../components/navbar";
+import Loading from "../../components/assets/loading.gif";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
     const [loading, setLoading] = useState(false); // Para mostrar o spinner durante o carregamento
-    const [error, setError] = useState(""); // Para mostrar possíveis erros
+    const [editMatch, setEditMatch] = useState(null); // Estado para controlar a edição
 
     // Função para buscar o histórico das partidas
     const fetchHistorico = async () => {
@@ -19,24 +20,20 @@ const HistoricoPartidas = () => {
                 partidasList.push({ id: doc.id, ...doc.data() });
             });
 
-            // Filtra e mostra apenas as partidas já finalizadas
-            const partidasFinalizadas = partidasList.filter(
-                (match) => match.result !== "pending"
-            );
+            // Filtra apenas as partidas com resultado definido (onde result não é "pending")
+            const partidasFinalizadas = partidasList.filter((match) => match.result !== "pending");
 
-            // Ordena as partidas por rodada
-            partidasFinalizadas.sort((a, b) => a.round - b.round);
+            // Ordena as partidas por rodada e turno
+            partidasFinalizadas.sort((a, b) => a.round - b.round || a.turno - b.turno);
 
-            setHistorico(partidasFinalizadas); // Atualiza o estado com o histórico
+            setHistorico(partidasFinalizadas); // Atualiza o estado com as partidas finalizadas
         } catch (error) {
             console.error("Erro ao buscar histórico:", error);
-            setError("Erro ao carregar o histórico de partidas. Tente novamente.");
         } finally {
             setLoading(false); // Finaliza o spinner
         }
     };
 
-    // Carregar o histórico quando o componente for montado
     useEffect(() => {
         fetchHistorico();
     }, []);
@@ -44,7 +41,7 @@ const HistoricoPartidas = () => {
     // Função para agrupar partidas por turno
     const groupByTurn = (matches) => {
         return matches.reduce((acc, match) => {
-            const turno = match.turno === 1 ? "Turno 1" : "Turno 2";
+            const turno = match.turno === 1 ? "Turno 1" : "Turno 2"; // Ajuste aqui para garantir a chave correta
             if (!acc[turno]) {
                 acc[turno] = [];
             }
@@ -53,70 +50,131 @@ const HistoricoPartidas = () => {
         }, {});
     };
 
-    // Agrupa as partidas por turno
-    const groupedMatches = groupByTurn(historico);
+    // Função para calcular e atualizar o resultado dos jogadores
+    const updatePlayerStats = async (player1Id, player2Id, player1Goals, player2Goals) => {
+        const playersRef = collection(db, "players");
 
-    // Função para editar o resultado de uma partida
-    const editMatch = (match) => {
-        // Exibe o modal SweetAlert2 para editar os gols dos jogadores
-        Swal.fire({
-            title: `Editar Resultado: ${match.player1} vs ${match.player2}`,
-            html: ` 
-                <div class="form-group">
-                    <label for="player1Goals">Gols ${match.player1}:</label>
-                    <input type="number" id="player1Goals" class="swal2-input" value="${match.player1Goals}" />
-                </div>
-                <div class="form-group">
-                    <label for="player2Goals">Gols ${match.player2}:</label>
-                    <input type="number" id="player2Goals" class="swal2-input" value="${match.player2Goals}" />
-                </div>
-            `,
-            focusConfirm: false,
-            preConfirm: () => {
-                const player1Goals = document.getElementById("player1Goals").value;
-                const player2Goals = document.getElementById("player2Goals").value;
+        const player1Ref = doc(playersRef, player1Id);
+        await updateDoc(player1Ref, {
+            goalsFor: player1Goals,
+            goalsAgainst: player2Goals,
+            goalDifference: player1Goals - player2Goals,
+            wins: player1Goals > player2Goals ? 1 : 0,
+            losses: player1Goals < player2Goals ? 1 : 0,
+            draws: player1Goals === player2Goals ? 1 : 0,
+            points: player1Goals > player2Goals ? 3 : player1Goals < player2Goals ? 0 : 1,
+        });
 
-                // Atualizar no Firebase
-                return updateMatchResult(match.id, player1Goals, player2Goals);
-            }
+        const player2Ref = doc(playersRef, player2Id);
+        await updateDoc(player2Ref, {
+            goalsFor: player2Goals,
+            goalsAgainst: player1Goals,
+            goalDifference: player2Goals - player1Goals,
+            wins: player2Goals > player1Goals ? 1 : 0,
+            losses: player2Goals < player1Goals ? 1 : 0,
+            draws: player2Goals === player1Goals ? 1 : 0,
+            points: player2Goals > player1Goals ? 3 : player2Goals < player1Goals ? 0 : 1,
         });
     };
 
-    // Função para atualizar os resultados no Firebase
-    const updateMatchResult = async (matchId, player1Goals, player2Goals) => {
-        try {
-            const matchRef = doc(db, "matches", matchId);
+    const handleEditMatch = (match) => {
+        setEditMatch(match); // Definir a partida a ser editada
+    };
 
-            // Determinar o resultado
-            const result = player1Goals === player2Goals
-                ? "draw"
-                : player1Goals > player2Goals
-                    ? "win"
-                    : "loss";
-
-            // Atualizar a partida no Firebase
-            await updateDoc(matchRef, {
-                player1Goals: Number(player1Goals),
-                player2Goals: Number(player2Goals),
-                result: result,
-            });
-
+    const handleSaveEdit = async () => {
+        if (editMatch) {
+            // Antes de iniciar a atualização, abre o SweetAlert2 com um spinner
             Swal.fire({
-                icon: "success",
-                title: "Resultado Atualizado!",
-                text: "Os gols foram atualizados com sucesso.",
+                title: 'Aguarde',
+                text: 'Salvando a partida...',
+                imageUrl: Loading, // Aqui você pode usar um spinner customizado
+                imageWidth: 150,
+                imageHeight: 150,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            fetchHistorico(); // Recarregar o histórico para refletir as mudanças
-        } catch (error) {
-            console.error("Erro ao atualizar resultado:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Erro!",
-                text: "Não foi possível atualizar os resultados. Tente novamente.",
-            });
+            const { id, player1, player2, idPlayer1, idPlayer2 } = editMatch;
+
+            try {
+                // Atualizar a partida no Firebase
+                const matchRef = doc(db, "matches", id);
+                await updateDoc(matchRef, {
+                    player1Goals: editMatch.player1Goals,
+                    player2Goals: editMatch.player2Goals,
+                    result: editMatch.player1Goals > editMatch.player2Goals
+                        ? player1
+                        : editMatch.player1Goals < editMatch.player2Goals
+                            ? player2
+                            : "EMPATE",
+                });
+
+                // Atualizar as estatísticas dos jogadores
+                await updatePlayerStats(idPlayer1, idPlayer2, editMatch.player1Goals, editMatch.player2Goals);
+
+                // Após salvar, fecha o modal e mostra a confirmação
+                Swal.close(); // Fecha o SweetAlert
+                setEditMatch(null); // Limpar o estado de edição
+                fetchHistorico(); // Recarregar o histórico de partidas
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: 'Partida salva com sucesso!',
+                    customClass: {
+                        confirmButton: "btn btn-lg btn-success w-100",
+                    },
+                    buttonsStyling: false
+                });
+            } catch (error) {
+                // Se ocorrer algum erro
+                Swal.close(); // Fecha o SweetAlert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Houve um erro ao salvar a partida. Tente novamente.',
+                });
+            }
         }
     };
+
+    // Função para aumentar ou diminuir os gols
+    const adjustGoals = (type, player) => {
+        setEditMatch((prevMatch) => {
+            const updatedMatch = { ...prevMatch };
+            if (player === "player1") {
+                updatedMatch.player1Goals = type === "increment"
+                    ? updatedMatch.player1Goals + 1
+                    : updatedMatch.player1Goals > 0
+                        ? updatedMatch.player1Goals - 1
+                        : 0;
+            } else {
+                updatedMatch.player2Goals = type === "increment"
+                    ? updatedMatch.player2Goals + 1
+                    : updatedMatch.player2Goals > 0
+                        ? updatedMatch.player2Goals - 1
+                        : 0;
+            }
+            return updatedMatch;
+        });
+    };
+
+    // Função para manipular a mudança de valor nos inputs
+    const handleResultChange = (player, value) => {
+        setEditMatch((prevMatch) => {
+            const updatedMatch = { ...prevMatch };
+            if (player === "player1") {
+                updatedMatch.player1Goals = parseInt(value) || 0;
+            } else {
+                updatedMatch.player2Goals = parseInt(value) || 0;
+            }
+            return updatedMatch;
+        });
+    };
+
+    // Agrupar as partidas
+    const groupedMatches = groupByTurn(historico);
 
     return (
         <>
@@ -124,8 +182,6 @@ const HistoricoPartidas = () => {
 
             <div className="container mt-4 text-center">
                 <h2 className="mb-4">Histórico de Partidas</h2>
-
-                {error && <p className="text-danger">{error}</p>}
 
                 {/* Spinner enquanto carrega */}
                 {loading ? (
@@ -136,7 +192,7 @@ const HistoricoPartidas = () => {
                     <>
                         {/* Se não houver partidas no histórico */}
                         {historico.length === 0 ? (
-                            <p className="text-center">Não há partidas para exibir.</p>
+                            <p className="text-center">Não há partidas finalizadas para exibir.</p>
                         ) : (
                             <>
                                 {/* Exibe partidas do Turno 1 */}
@@ -148,12 +204,12 @@ const HistoricoPartidas = () => {
                                                 <thead className="thead-dark">
                                                     <tr>
                                                         <th className="align-middle">Rodada</th>
-                                                        <th className="align-middle">Jogador 1</th>
-                                                        <th className="align-middle">Jogador 2</th>
-                                                        <th className="align-middle">Gols Jogador 1</th>
-                                                        <th className="align-middle">Gols Jogador 2</th>
+                                                        <th className="align-middle">J1</th>
+                                                        <th className="align-middle">J2</th>
+                                                        <th className="align-middle">GJ1</th>
+                                                        <th className="align-middle">GJ2</th>
                                                         <th className="align-middle">Resultado</th>
-                                                        <th className="align-middle">Ações</th> {/* Nova coluna para o botão de editar */}
+                                                        <th className="align-middle">Ações</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -172,10 +228,7 @@ const HistoricoPartidas = () => {
                                                                         : "EMPATE"}
                                                             </td>
                                                             <td>
-                                                                <button
-                                                                    className="btn btn-warning"
-                                                                    onClick={() => editMatch(match)}
-                                                                >
+                                                                <button className="btn btn-warning" onClick={() => handleEditMatch(match)}>
                                                                     Editar
                                                                 </button>
                                                             </td>
@@ -196,12 +249,12 @@ const HistoricoPartidas = () => {
                                                 <thead className="thead-dark">
                                                     <tr>
                                                         <th className="align-middle">Rodada</th>
-                                                        <th className="align-middle">Jogador 1</th>
-                                                        <th className="align-middle">Jogador 2</th>
-                                                        <th className="align-middle">Gols Jogador 1</th>
-                                                        <th className="align-middle">Gols Jogador 2</th>
+                                                        <th className="align-middle">J1</th>
+                                                        <th className="align-middle">J2</th>
+                                                        <th className="align-middle">GJ1</th>
+                                                        <th className="align-middle">GJ2</th>
                                                         <th className="align-middle">Resultado</th>
-                                                        <th className="align-middle">Ações</th> {/* Nova coluna para o botão de editar */}
+                                                        <th className="align-middle">Ações</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -220,10 +273,7 @@ const HistoricoPartidas = () => {
                                                                         : "EMPATE"}
                                                             </td>
                                                             <td>
-                                                                <button
-                                                                    className="btn btn-warning"
-                                                                    onClick={() => editMatch(match)}
-                                                                >
+                                                                <button className="btn btn-warning" onClick={() => handleEditMatch(match)}>
                                                                     Editar
                                                                 </button>
                                                             </td>
@@ -239,6 +289,75 @@ const HistoricoPartidas = () => {
                     </>
                 )}
             </div>
+
+            {/* Modal de Edição */}
+            {editMatch && (
+                <div className="modal fade show" style={{ display: "block" }} tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title" id="exampleModalLabel">Editar Partida</h5>
+                                <button type="button" className="btn-close" data-dismiss="modal" aria-label="Close" onClick={() => setEditMatch(null)}>
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                {/* Input de Gols do Jogador 1 */}
+                                <div className="form-group mb-3 text-center">
+                                    <label>Gols {editMatch.player1}</label>
+                                    <div className="input-group">
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={() => adjustGoals("decrement", "player1")}
+                                        >
+                                            -
+                                        </button>
+                                        <input
+                                            type="number"
+                                            className="form-control text-center"
+                                            value={editMatch.player1Goals}
+                                            onChange={(e) => handleResultChange("player1", e.target.value)}
+                                        />
+                                        <button
+                                            className="btn btn-success"
+                                            onClick={() => adjustGoals("increment", "player1")}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* Input de Gols do Jogador 2 */}
+                                <div className="form-group mb-3 text-center">
+                                    <label>Gols {editMatch.player2}</label>
+                                    <div className="input-group">
+                                        <button
+                                            className="btn btn-danger"
+                                            onClick={() => adjustGoals("decrement", "player2")}
+                                        >
+                                            -
+                                        </button>
+                                        <input
+                                            type="number"
+                                            className="form-control text-center"
+                                            value={editMatch.player2Goals}
+                                            onChange={(e) => handleResultChange("player2", e.target.value)}
+                                        />
+                                        <button
+                                            className="btn btn-success"
+                                            onClick={() => adjustGoals("increment", "player2")}
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-dark" onClick={() => setEditMatch(null)}>Cancelar</button>
+                                <button type="button" className="btn btn-success" onClick={handleSaveEdit}>Salvar alterações</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

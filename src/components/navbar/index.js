@@ -4,30 +4,27 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import Swal from "sweetalert2"; // Importando o SweetAlert
+import Loading from "../assets/loading.gif";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth"; // Importando updatePassword
 
 const Navbar = () => {
     const [userName, setUserName] = useState(null);
-    const [userEmail, setUserEmail] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Verificar se o usuário está autenticado e pegar o nome do usuário da coleção "usuarios"
         const user = auth.currentUser;
         if (user) {
             const getUserData = async () => {
                 const userDoc = doc(db, "usuarios", user.uid);
                 const userSnap = await getDoc(userDoc);
                 if (userSnap.exists()) {
-                    setUserName(userSnap.data().nome); // Supondo que o nome esteja na coleção de usuários
-
-                    setUserEmail(user.email); // Pegando o email do usuário
+                    setUserName(userSnap.data().nome);
                 }
             };
             getUserData();
+            console.log(userName);
         }
-    }, []);
-
-    console.log(userName);
+    }, [userName]);
 
     const handleLogout = () => {
         signOut(auth)
@@ -40,69 +37,152 @@ const Navbar = () => {
     };
 
     const handlePasswordChange = () => {
-        // Aqui você pode implementar a lógica para alterar a senha, talvez com o método `sendPasswordResetEmail` do Firebase
-        if (userEmail) {
-            auth.sendPasswordResetEmail(userEmail)
-                .then(() => {
-                    alert("Email para redefinir senha enviado.");
-                })
-                .catch((error) => {
-                    console.error("Erro ao enviar email de redefinição: ", error);
+        // Exibe o modal para alteração de senha
+        Swal.fire({
+            title: "Alterar Senha",
+            html: `
+                <input type="password" id="currentPassword" class="form-control mb-3" placeholder="Senha Atual" required>
+                <input type="password" id="newPassword" class="form-control mb-3" placeholder="Nova Senha" required>
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Confirmar Nova Senha" required>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            cancelButtonText: "Cancelar",
+            confirmButtonText: "Alterar",
+            customClass: {
+                confirmButton: "btn btn-lg btn-success w-100",
+                cancelButton: "btn btn-lg btn-dark w-100",
+            },
+            width: '90%', // Ajusta a largura para telas menores
+            padding: '1.5em',
+            background: '#fff',
+            preConfirm: () => {
+                const currentPassword = document.getElementById("currentPassword").value;
+                const newPassword = document.getElementById("newPassword").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+
+                // Verifica se os campos estão preenchidos
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    Swal.showValidationMessage("Por favor, preencha todos os campos.");
+                    return false;
+                }
+
+                // Verifica se a nova senha e a confirmação são iguais
+                if (newPassword !== confirmPassword) {
+                    Swal.showValidationMessage("As senhas não coincidem.");
+                    return false;
+                }
+
+                const user = auth.currentUser;
+                if (user && currentPassword) {
+                    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+
+                    return reauthenticateWithCredential(user, credential).then(() => {
+                        // Atualiza a senha do usuário
+                        return updatePassword(user, newPassword); // Aqui usamos a função updatePassword corretamente
+                    }).catch((error) => {
+                        Swal.showValidationMessage("Senha atual incorreta.");
+                        throw error;
+                    });
+                }
+                return false;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "Senha Alterada!",
+                    text: "Sua senha foi alterada com sucesso.",
+                    icon: "success",
+                    confirmButtonText: "Ok",
+                    customClass: {
+                        confirmButton: "btn btn-lg btn-success w-100",
+                    },
+                    buttonsStyling: false
                 });
-        }
+            }
+        }).catch((error) => {
+            console.error("Erro ao alterar a senha:", error);
+            Swal.fire({
+                title: "Erro!",
+                text: "Houve um erro ao tentar alterar a senha. Tente novamente.",
+                icon: "error",
+                confirmButtonText: "Ok"
+            });
+        });
     };
 
     const handleResetSystem = async () => {
-        // Mostra o SweetAlert para confirmar a ação
-        const result = await Swal.fire({
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-danger"
+            },
+        });
+
+        const result = await swalWithBootstrapButtons.fire({
             title: "Tem certeza?",
             text: "Essa ação apagará todos os dados das partidas e jogadores! Não será possível reverter.",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonText: "Sim, resetar!",
             cancelButtonText: "Cancelar",
+            confirmButtonText: "Sim, resetar!",
+            reverseButtons: true
         });
 
         if (result.isConfirmed) {
             try {
-                // Deleta todos os documentos da coleção "matches"
+                swalWithBootstrapButtons.fire({
+                    title: 'Aguarde',
+                    text: 'Resetando o sistema...',
+                    imageUrl: Loading,
+                    imageWidth: 150,
+                    imageHeight: 150,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 const matchesSnapshot = await getDocs(collection(db, "matches"));
-                matchesSnapshot.forEach(async (docSnap) => {
+                const deleteMatchesPromises = matchesSnapshot.docs.map(async (docSnap) => {
                     await deleteDoc(doc(db, "matches", docSnap.id));
                 });
 
-                // Deleta todos os documentos da coleção "players"
                 const playersSnapshot = await getDocs(collection(db, "players"));
-                playersSnapshot.forEach(async (docSnap) => {
+                const deletePlayersPromises = playersSnapshot.docs.map(async (docSnap) => {
                     await deleteDoc(doc(db, "players", docSnap.id));
                 });
 
-                // Sucesso ao resetar o sistema
-                await Swal.fire({
+                await Promise.all(deleteMatchesPromises);
+                await Promise.all(deletePlayersPromises);
+
+                await swalWithBootstrapButtons.fire({
                     title: "Sistema Resetado!",
                     text: "Todos os dados foram apagados com sucesso.",
-                    icon: "success",
+                    icon: "success"
                 });
 
-                // Redireciona para a página inicial, atualizando a página
-                window.location.href = "/Home"; // Redireciona para a página inicial
-
-
+                window.location.href = "/Home";
             } catch (error) {
                 console.error("Erro ao resetar o sistema: ", error);
-                await Swal.fire({
+                await swalWithBootstrapButtons.fire({
                     title: "Erro!",
                     text: "Houve um erro ao tentar resetar o sistema. Tente novamente.",
-                    icon: "error",
+                    icon: "error"
                 });
             }
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            await swalWithBootstrapButtons.fire({
+                title: "Cancelado",
+                text: "Ação de reset foi cancelada.",
+                icon: "error"
+            });
         }
     };
 
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <div className="container">
-                {/* Link com a logo e o nome */}
                 <Link className="navbar-brand" to="/Home">
                     <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', marginRight: '10px' }} />
                     Battle of Champions

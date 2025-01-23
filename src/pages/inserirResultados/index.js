@@ -3,6 +3,7 @@ import { doc, getDocs, updateDoc, collection, getDoc } from "firebase/firestore"
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
+import Loading from "../../components/assets/loading.gif";
 
 const InserirResultados = () => {
     const [matches, setMatches] = useState([]);
@@ -54,7 +55,7 @@ const InserirResultados = () => {
         }
     }, [groupMatchesByTurnAndRound]); // Aqui você pode adicionar as dependências de qualquer coisa que a função use (se necessário)
 
-    
+
 
     const loadMatch = (index, turno, round) => {
         if (turno === 1) {
@@ -77,6 +78,12 @@ const InserirResultados = () => {
                     player2Goals: match.player2Goals || 0,
                 });
             }
+        }
+
+        // Rola até o topo da partida
+        const topoElement = document.getElementById("topo");
+        if (topoElement) {
+            topoElement.scrollIntoView({ behavior: "smooth" });
         }
     };
 
@@ -103,7 +110,19 @@ const InserirResultados = () => {
 
     const saveMatchResult = async () => {
         if (currentMatch) {
-            setIsLoading(true);  // Ativa o spinner
+            setIsLoading(true);  // Ativa o spinner de carregamento
+            Swal.fire({
+                title: 'Aguarde',
+                text: 'Salvando placar...',
+                imageUrl: Loading, // Aqui você pode usar a URL do gif do spinner
+                imageWidth: 150,
+                imageHeight: 150,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading(); // Exibe o spinner de carregamento
+                }
+            });
+
             try {
                 const matchRef = doc(db, "matches", currentMatch.id);
                 const result = matchResults.player1Goals === matchResults.player2Goals
@@ -124,6 +143,10 @@ const InserirResultados = () => {
                     icon: "success",
                     title: "Resultado Salvo!",
                     text: "O resultado da partida foi salvo com sucesso.",
+                    customClass: {
+                        confirmButton: "btn btn-lg btn-success w-100",
+                    },
+                    buttonsStyling: false
                 });
 
                 setCurrentMatch(null);
@@ -207,14 +230,14 @@ const InserirResultados = () => {
                 {error && <p className="text-danger">{error}</p>}
 
                 {currentMatch ? (
-                    <div className="mb-4">
+                    <div className="mb-4" id="topo">
                         <h3>Rodada {currentMatch.round + 1} </h3>
                         <h3>{currentMatch.player1} vs {currentMatch.player2}</h3>
                         <div className="mb-3 mt-3">
-                            <label htmlFor="player1Goals" className="form-label">Gols {currentMatch.player1}: </label>
+                            <label htmlFor="player1Goals" className="form-label">Gols <b>{currentMatch.player1}</b>: </label>
                             <div className="input-group">
                                 <button
-                                    className="btn btn-secondary"
+                                    className="btn btn-danger"
                                     onClick={() => decrementGoal("player1")}
                                 >
                                     -
@@ -227,7 +250,7 @@ const InserirResultados = () => {
                                     onChange={(e) => handleResultChange(e.target.value, matchResults.player2Goals)}
                                 />
                                 <button
-                                    className="btn btn-secondary"
+                                    className="btn btn-success"
                                     onClick={() => incrementGoal("player1")}
                                 >
                                     +
@@ -235,10 +258,10 @@ const InserirResultados = () => {
                             </div>
                         </div>
                         <div className="mb-3">
-                            <label htmlFor="player2Goals" className="form-label">Gols {currentMatch.player2}: </label>
+                            <label htmlFor="player2Goals" className="form-label">Gols <b>{currentMatch.player2}</b>: </label>
                             <div className="input-group">
                                 <button
-                                    className="btn btn-secondary"
+                                    className="btn btn-danger"
                                     onClick={() => decrementGoal("player2")}
                                 >
                                     -
@@ -251,7 +274,7 @@ const InserirResultados = () => {
                                     onChange={(e) => handleResultChange(matchResults.player1Goals, e.target.value)}
                                 />
                                 <button
-                                    className="btn btn-secondary"
+                                    className="btn btn-success"
                                     onClick={() => incrementGoal("player2")}
                                 >
                                     +

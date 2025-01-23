@@ -5,37 +5,30 @@ import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
 
 const SorteioConfrontos = () => {
-    // const [error, setError] = useState("");
-    const [players, setPlayers] = useState([]); // Estado para armazenar os jogadores cadastrados
-    const [rounds, setRounds] = useState([]); // Estado para armazenar as rodadas com partidas
-    // const [matchResults, setMatchResults] = useState({}); // Estado para armazenar os placares dos jogos
-    // const [allMatchesSaved, setAllMatchesSaved] = useState(false); // Estado para controlar se todos os confrontos foram salvos
-    const [loading, setLoading] = useState(false); // Controle de carregamento
+    const [players, setPlayers] = useState([]);
+    const [rounds, setRounds] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    // Função para buscar jogadores do Firestore
     const fetchPlayers = async () => {
-        setLoading(true); // Inicia o spinner enquanto busca os jogadores
+        setLoading(true); // Inicia o carregamento
         try {
             const querySnapshot = await getDocs(collection(db, "players"));
             const playersList = [];
             querySnapshot.forEach((doc) => {
                 playersList.push({ id: doc.id, ...doc.data() });
             });
-            setPlayers(playersList); // Atualiza a lista de jogadores
+            setPlayers(playersList);
         } catch (error) {
-            console.error("Erro ao buscar jogadores:", error);
-            // setError("Erro ao carregar os jogadores. Tente novamente.");
             Swal.fire({
                 icon: "error",
                 title: "Erro!",
                 text: "Não foi possível carregar os jogadores. Tente novamente.",
             });
         } finally {
-            setLoading(false); // Finaliza o spinner
+            setLoading(false); // Finaliza o carregamento
         }
     };
 
-    // Função para gerar as rodadas (todos contra todos)
     const generateRoundRobin = (players) => {
         const numPlayers = players.length;
 
@@ -57,69 +50,80 @@ const SorteioConfrontos = () => {
             }
             rounds.push(round);
 
-            players.splice(1, 0, players.pop()); // Rotaciona os jogadores
+            players.splice(1, 0, players.pop());
         }
 
         return rounds;
     };
 
-    // Função para criar Turno e Returno
     const generateTurnoReturno = useCallback((players) => {
         const firstTurnRounds = generateRoundRobin(players);
-    
+
         const secondTurnRounds = firstTurnRounds.map(round =>
             round.map(match => [match[1], match[0]]) // Inverte os confrontos para o segundo turno
         );
-    
+
         return [...firstTurnRounds, ...secondTurnRounds];
-    }, []); // Não há dependências adicionais aqui, pois a função não depende de variáveis externas
+    }, []);
 
-    // Função para embaralhar as rodadas
-    const reshuffleMatches = () => {
-        // Embaralha a ordem dos jogadores e gera novas rodadas
-        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5); // Embaralha os jogadores aleatoriamente
-        const newRounds = generateTurnoReturno(shuffledPlayers); // Gera as novas rodadas com os jogadores embaralhados
-        setRounds(newRounds); // Atualiza as rodadas
-        console.log("Partidas embaralhadas novamente.");
-    };
-
-    // Função para salvar os confrontos no Firebase
     const saveMatch = async (player1, player2, roundIndex, turno) => {
         try {
-            // Verificar se algum dos jogadores é fictício e não salvar esse confronto
             if (player1.name === "Fictício" || player2.name === "Fictício") {
-                console.log("Ignorando confronto com jogador fictício");
-                return; // Não salvar o confronto
+                return;
             }
 
-            // Cria um documento para o confronto no Firebase
-            const matchRef = await addDoc(collection(db, "matches"), {
+            await addDoc(collection(db, "matches"), {
                 player1: player1.name,
                 idPlayer1: player1.id,
                 player2: player2.name,
                 idPlayer2: player2.id,
                 round: roundIndex,
-                turno: turno, // Armazena o turno (1 ou 2)
+                turno: turno,
                 player1Goals: 0,
                 player2Goals: 0,
-                result: "pending", // Inicialmente o resultado é "pendente"
+                result: "pending",
             });
-            console.log("Confronto salvo no Firebase:", matchRef.id);
         } catch (error) {
             console.error("Erro ao salvar o confronto:", error);
         }
     };
 
-    // Função para salvar todos os confrontos gerados
+    const checkIfMatchesExist = async () => {
+        const querySnapshot = await getDocs(collection(db, "matches"));
+        return !querySnapshot.empty;
+    };
+
     const saveAllMatches = async () => {
-        setLoading(true); // Inicia o spinner enquanto os confrontos são salvos
+        const matchesExist = await checkIfMatchesExist();
+        if (matchesExist) {
+            Swal.fire({
+                icon: "warning",
+                title: "Sistema já possui confrontos!",
+                text: "Para salvar novos sorteios, é necessário resetar o sistema.",
+                confirmButtonText: "Ok",
+                customClass: {
+                    confirmButton: "btn btn-lg btn-warning w-100",
+                },
+                buttonsStyling: false,
+            });
+            return;
+        }
+
+        // Exibe o SweetAlert com o spinner de loading
+        const loadingAlert = Swal.fire({
+            title: "Salvando confrontos...",
+            text: "Aguarde enquanto os confrontos estão sendo salvos.",
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            },
+        });
+
+        setLoading(true); // Inicia o carregamento
+
         let matchesSavedCount = 0;
-        const totalMatches = rounds.reduce((acc, round) => acc + round.length, 0); // Total de confrontos a serem salvos
-        let validMatchesCount = 0; // Contador para confrontos válidos
+        const totalMatches = rounds.reduce((acc, round) => acc + round.length, 0);
 
-        console.log(`Total de confrontos a serem salvos: ${totalMatches}`);
-
-        // Divida as rodadas em dois turnos
         const firstTurnRounds = rounds.slice(0, rounds.length / 2);
         const secondTurnRounds = rounds.slice(rounds.length / 2);
 
@@ -127,12 +131,8 @@ const SorteioConfrontos = () => {
         for (const [roundIndex, round] of firstTurnRounds.entries()) {
             for (const match of round) {
                 if (match[0].name !== "Fictício" && match[1].name !== "Fictício") {
-                    console.log(`Salvando confronto: ${match[0].name} vs ${match[1].name} (Rodada ${roundIndex + 1})`);
-                    await saveMatch(match[0], match[1], roundIndex, 1); // Passa 1 para indicar que é do primeiro turno
+                    await saveMatch(match[0], match[1], roundIndex, 1);
                     matchesSavedCount += 1;
-                    validMatchesCount += 1; // Incrementa o contador de confrontos válidos
-                } else {
-                    console.log(`Ignorando confronto com jogador fictício: ${match[0].name} vs ${match[1].name}`);
                 }
             }
         }
@@ -141,33 +141,27 @@ const SorteioConfrontos = () => {
         for (const [roundIndex, round] of secondTurnRounds.entries()) {
             for (const match of round) {
                 if (match[0].name !== "Fictício" && match[1].name !== "Fictício") {
-                    console.log(`Salvando confronto: ${match[0].name} vs ${match[1].name} (Rodada ${roundIndex + 1})`);
-                    await saveMatch(match[0], match[1], roundIndex + firstTurnRounds.length, 2); // Passa 2 para indicar que é do segundo turno
+                    await saveMatch(match[0], match[1], roundIndex + firstTurnRounds.length, 2);
                     matchesSavedCount += 1;
-                    validMatchesCount += 1; // Incrementa o contador de confrontos válidos
-                } else {
-                    console.log(`Ignorando confronto com jogador fictício: ${match[0].name} vs ${match[1].name}`);
                 }
             }
         }
 
-        // Verificando o contador de confrontos salvos e válidos
-        console.log(`Confrontos válidos salvos: ${matchesSavedCount}`);
-        console.log(`Confrontos válidos totais: ${validMatchesCount}`);
+        setLoading(false); // Finaliza o carregamento
+        loadingAlert.close(); // Fecha o SweetAlert de carregamento
 
-        // Quando todos os confrontos válidos forem salvos, dispara o alerta
-        setLoading(false); // Finaliza o spinner
-
-        if (matchesSavedCount === validMatchesCount) {
-            // setAllMatchesSaved(true);
-            console.log("Todos os confrontos válidos foram salvos.");
+        if (matchesSavedCount === totalMatches) {
             Swal.fire({
                 icon: "success",
                 title: "Confrontos Salvos!",
                 text: "Todos os confrontos foram salvos com sucesso.",
+                confirmButtonText: 'Ok!',
+                customClass: {
+                    confirmButton: "btn btn-lg btn-success w-100",
+                },
+                buttonsStyling: false,
             });
         } else {
-            console.log("Alguns confrontos não foram salvos.");
             Swal.fire({
                 icon: "error",
                 title: "Erro!",
@@ -176,51 +170,13 @@ const SorteioConfrontos = () => {
         }
     };
 
-    /*
-    // Função para apagar todos os confrontos da coleção com confirmação
-    const deleteAllMatches = async () => {
-        // Exibe o SweetAlert de confirmação
-        const result = await Swal.fire({
-            title: 'Tem certeza?',
-            text: "Você deseja apagar todos os confrontos?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sim, apagar!',
-            cancelButtonText: 'Não, cancelar',
-            reverseButtons: true, // Faz com que o botão "Cancelar" fique à esquerda
-        });
-
-        if (result.isConfirmed) {
-            // Se o usuário confirmar a exclusão
-            setLoading(true); // Inicia o spinner enquanto os confrontos são apagados
-            try {
-                const querySnapshot = await getDocs(collection(db, "matches"));
-                querySnapshot.forEach(async (doc) => {
-                    await deleteDoc(doc.ref); // Apaga os confrontos
-                });
-                setLoading(false); // Finaliza o spinner
-                Swal.fire({
-                    icon: "success",
-                    title: "Confrontos Apagados!",
-                    text: "Todos os confrontos foram apagados com sucesso.",
-                });
-            } catch (error) {
-                console.error("Erro ao apagar todos os confrontos:", error);
-                setLoading(false); // Finaliza o spinner
-                Swal.fire({
-                    icon: "error",
-                    title: "Erro!",
-                    text: "Erro ao apagar os confrontos. Tente novamente.",
-                });
-            }
-        } else {
-            // Se o usuário cancelar a ação
-            console.log("Ação de apagar confrontos foi cancelada.");
-        }
+    const reshuffleMatches = () => {
+        const shuffledPlayers = [...players].sort(() => Math.random() - 0.5); // Embaralha os jogadores aleatoriamente
+        const newRounds = generateTurnoReturno(shuffledPlayers); // Gera as novas rodadas com os jogadores embaralhados
+        setRounds(newRounds); // Atualiza as rodadas
+        console.log("Partidas embaralhadas novamente.");
     };
-    */
 
-    // Carregar os jogadores e gerar as partidas quando o componente for montado
     useEffect(() => {
         fetchPlayers();
     }, []);
@@ -228,18 +184,15 @@ const SorteioConfrontos = () => {
     useEffect(() => {
         if (players.length > 1) {
             const roundsWithTurnoReturno = generateTurnoReturno(players);
-            setRounds(roundsWithTurnoReturno); // Atualiza as rodadas com turno e returno
+            setRounds(roundsWithTurnoReturno);
         }
-    }, [players, generateTurnoReturno]); // Inclua 'generateTurnoReturno' nas dependências
-
+    }, [players, generateTurnoReturno]);
 
     return (
         <>
             <Navbar />
-
             <div className="container mt-5 text-center">
                 <h2 className="mb-4">Partidas Sorteadas</h2>
-
                 {loading ? (
                     <div className="spinner-border" role="status">
                         <span className="visually-hidden">Carregando...</span>
@@ -248,7 +201,6 @@ const SorteioConfrontos = () => {
                     <p>Não há partidas sorteadas.</p>
                 ) : (
                     <div className="d-flex flex-wrap justify-content-center gap-1 text-center">
-                        {/* Exibindo Turno 1 e Turno 2 lado a lado */}
                         <div className="w-48">
                             <h3 className="mb-4"><b>Turno 1</b></h3>
                             {rounds.slice(0, rounds.length / 2).map((round, index) => (
@@ -283,12 +235,10 @@ const SorteioConfrontos = () => {
                     </div>
                 )}
 
-                {/* Botões para salvar e apagar confrontos */}
                 <div className="mt-4 d-flex flex-column gap-3">
                     <button onClick={saveAllMatches} className="btn btn-lg btn-primary me-3 w-100">
                         Salvar Todos os Confrontos
                     </button>
-                    {/* Novo botão para embaralhar as partidas */}
                     <button onClick={reshuffleMatches} className="btn btn-lg btn-secondary mt-3">
                         Embaralhar Novamente
                     </button>

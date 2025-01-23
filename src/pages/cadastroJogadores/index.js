@@ -3,6 +3,7 @@ import { doc, setDoc, getDocs, deleteDoc, collection } from "firebase/firestore"
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from 'sweetalert2';
+import Loading from "../../components/assets/loading.gif";  // A imagem do spinner
 
 const CadastroJogadores = () => {
     const [name, setName] = useState("");
@@ -16,6 +17,23 @@ const CadastroJogadores = () => {
             setError("O nome do jogador é obrigatório!");
             return;
         }
+
+        setLoading(true); // Inicia o carregamento (spinner)
+
+        // Exibe o carregamento do SweetAlert2
+        Swal.fire({
+            title: 'Aguarde',
+            text: 'Salvando jogador...',
+            imageUrl: Loading, // Seu spinner customizado
+            imageWidth: 150,
+            imageHeight: 150,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            },
+            allowOutsideClick: false, // Impede fechar ao clicar fora
+            allowEscapeKey: false // Impede fechar ao pressionar ESC
+        });
 
         // Gerar um ID único para cada jogador
         const userId = name.toLowerCase().replace(/\s+/g, "_") + "_" + new Date().toISOString();
@@ -31,17 +49,23 @@ const CadastroJogadores = () => {
         };
 
         try {
-            setLoading(true); // Inicia o carregamento (spinner)
+            // Cria o jogador no Firestore
             const playerRef = doc(db, "players", userId);
             await setDoc(playerRef, playerData);
 
-            // Exibe mensagem de sucesso com SweetAlert2
+            // Exibe a mensagem de sucesso após salvar o jogador
             Swal.fire({
                 icon: 'success',
                 title: 'Jogador Cadastrado!',
                 text: 'O jogador foi cadastrado com sucesso.',
+                confirmButtonText: 'Ok!', // Texto do botão
+                customClass: {
+                    confirmButton: "btn btn-lg btn-success w-100",
+                },
+                buttonsStyling: false
             });
 
+            setLoading(false); // Finaliza o carregamento (spinner)
             setName(""); // Limpar o campo do nome após o cadastro
             setError(""); // Limpar erro
             fetchPlayers(); // Atualizar a lista de jogadores
@@ -49,14 +73,21 @@ const CadastroJogadores = () => {
             console.error("Erro ao cadastrar jogador:", error);
             setError("Erro ao cadastrar o jogador. Tente novamente.");
 
-            // Exibe mensagem de erro com SweetAlert2
+            // Exibe a mensagem de erro com SweetAlert2
             Swal.fire({
                 icon: 'error',
                 title: 'Erro!',
                 text: 'Não foi possível cadastrar o jogador. Tente novamente.',
+                confirmButtonText: 'Ok',
+                customClass: {
+                    confirmButton: 'btn-success' // Cor do botão de confirmação (verde)
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
         } finally {
-            setLoading(false); // Finaliza o carregamento (spinner)
+
+            //Swal.close(); // Fecha o SweetAlert de carregamento
         }
     };
 
@@ -84,6 +115,12 @@ const CadastroJogadores = () => {
                     icon: 'success',
                     title: 'Jogador Excluído!',
                     text: 'O jogador foi excluído com sucesso.',
+                    confirmButtonText: 'Ok',
+                    customClass: {
+                        confirmButton: 'btn-success' // Cor do botão de confirmação (verde)
+                    },
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
                 });
 
                 fetchPlayers(); // Atualizar a lista de jogadores
@@ -96,6 +133,12 @@ const CadastroJogadores = () => {
                     icon: 'error',
                     title: 'Erro!',
                     text: 'Não foi possível excluir o jogador. Tente novamente.',
+                    confirmButtonText: 'Ok',
+                    customClass: {
+                        confirmButton: 'btn-success' // Cor do botão de confirmação (verde)
+                    },
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
                 });
             } finally {
                 setLoading(false); // Finaliza o carregamento (spinner)
@@ -122,6 +165,12 @@ const CadastroJogadores = () => {
                 icon: 'error',
                 title: 'Erro!',
                 text: 'Não foi possível carregar os jogadores. Tente novamente.',
+                confirmButtonText: 'Ok',
+                customClass: {
+                    confirmButton: 'btn-success' // Cor do botão de confirmação (verde)
+                },
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
         } finally {
             setLoading(false); // Finaliza o carregamento (spinner)
@@ -159,11 +208,12 @@ const CadastroJogadores = () => {
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Digite o nome do jogador"
                             required
+                            disabled={loading} // Desabilita o campo de nome enquanto está carregando
                         />
                     </div>
                     {error && <p className="text-danger">{error}</p>}
-                    <button type="submit" className="btn btn-lg btn-primary w-100">
-                        Cadastrar Jogador
+                    <button type="submit" className="btn btn-lg btn-primary w-100" disabled={loading}>
+                        {loading ? 'Cadastrando...' : 'Cadastrar Jogador'}
                     </button>
                 </form>
 
@@ -184,6 +234,7 @@ const CadastroJogadores = () => {
                                 <button
                                     onClick={() => deletePlayer(player.id)}
                                     className="btn btn-danger btn-sm"
+                                    disabled={loading}
                                 >
                                     Excluir
                                 </button>
