@@ -101,7 +101,11 @@ const CadastroJogadores = () => {
             showCancelButton: true,
             confirmButtonText: 'Sim, excluir!',
             cancelButtonText: 'Cancelar',
-            reverseButtons: true
+            customClass: {
+                confirmButton: "btn btn-lg btn-success w-100 mb-3",
+                cancelButton: "btn btn-lg btn-dark w-100",
+            },
+            buttonsStyling: false,
         });
 
         if (result.isConfirmed) {
@@ -116,11 +120,11 @@ const CadastroJogadores = () => {
                     title: 'Jogador Excluído!',
                     text: 'O jogador foi excluído com sucesso.',
                     confirmButtonText: 'Ok',
+                    cancelButtonText: 'Cancelar',
                     customClass: {
-                        confirmButton: 'btn-success' // Cor do botão de confirmação (verde)
+                        confirmButton: "btn btn-lg btn-success w-100",
                     },
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
+                    buttonsStyling: false,
                 });
 
                 fetchPlayers(); // Atualizar a lista de jogadores
@@ -135,10 +139,9 @@ const CadastroJogadores = () => {
                     text: 'Não foi possível excluir o jogador. Tente novamente.',
                     confirmButtonText: 'Ok',
                     customClass: {
-                        confirmButton: 'btn-success' // Cor do botão de confirmação (verde)
+                        confirmButton: "btn btn-lg btn-success w-100",
                     },
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
+                    buttonsStyling: false,
                 });
             } finally {
                 setLoading(false); // Finaliza o carregamento (spinner)
