@@ -40,6 +40,7 @@ const InserirResultados = () => {
     }, [groupByRound]);  // Adiciona 'groupByRound' à lista de dependências se necessário
 
     const fetchMatches = useCallback(async () => {
+        setIsLoading(true);
         try {
             const querySnapshot = await getDocs(collection(db, "matches"));
             const matchesList = [];
@@ -51,6 +52,7 @@ const InserirResultados = () => {
             const groupedMatches = groupMatchesByTurnAndRound(pendingMatches);
 
             setMatches(groupedMatches);
+            setIsLoading(false);
         } catch (error) {
             console.error("Erro ao buscar confrontos:", error);
             setError("Erro ao carregar os confrontos. Tente novamente.");
@@ -305,7 +307,15 @@ const InserirResultados = () => {
 
                 <div className="mt-5">
                     <h3 className="mb-4">Lista de Confrontos Pendentes</h3>
-                    {matches.length === 0 ||
+
+                    {/* Exibe o spinner enquanto estiver carregando */}
+                    {isLoading ? (
+                        <div className="d-flex justify-content-center">
+                            <div className="spinner-border text-success" role="status">
+                                <span className="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    ) : matches.length === 0 ||
                         ((!matches.turno1 || Object.keys(matches.turno1).length === 0) &&
                             (!matches.turno2 || Object.keys(matches.turno2).length === 0)) ? (
                         <p>Não há confrontos pendentes para exibir.</p>
@@ -360,8 +370,8 @@ const InserirResultados = () => {
                             )}
                         </>
                     )}
-
                 </div>
+
             </div>
             <Footer />
         </>
