@@ -3,6 +3,7 @@ import { getDocs, collection, addDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
+import Loading from "../../components/assets/loading.gif";  // A imagem do spinner
 import Breadcrumb from "../../components/breadcrumb";
 import Footer from "../../components/footer";
 
@@ -111,14 +112,19 @@ const SorteioConfrontos = () => {
             return;
         }
 
-        // Exibe o SweetAlert com o spinner de loading
+        // Exibe o SweetAlert com o spinner de loading Salvando confrontos...
         const loadingAlert = Swal.fire({
             title: "Salvando confrontos...",
             text: "Aguarde enquanto os confrontos estão sendo salvos.",
+            imageUrl: Loading, // Seu spinner customizado
+            imageWidth: 150,
+            imageHeight: 150,
             showConfirmButton: false,
             didOpen: () => {
                 Swal.showLoading();
             },
+            allowOutsideClick: false, // Impede fechar ao clicar fora
+            allowEscapeKey: false // Impede fechar ao pressionar ESC
         });
 
         setLoading(true); // Inicia o carregamento
@@ -193,20 +199,22 @@ const SorteioConfrontos = () => {
     return (
         <>
             <Navbar />
-            <div className="container mt-5 d-flex flex-column text-center" style={{ minHeight: '60vh' }}>
-                
+            <div className="container mt-5 d-flex flex-column  text-center" style={{ minHeight: '60vh' }}>
+
                 <Breadcrumb tituloAnterior="Cad de Jogadores" linkAnterior="/CadastroJogadores" tituloProximo="Inserir Resultados" linkProximo="/InserirResultados" />
-                
+
                 <h2 className="my-4 text-success"><b>Sorteio de Confrontos</b></h2>
-                
+
                 {loading ? (
-                    <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Carregando...</span>
+                    <div className="d-flex justify-content-center">
+                        <div className="spinner-border text-center" role="status">
+                            <span className="visually-hidden">Carregando...</span>
+                        </div>
                     </div>
                 ) : rounds.length === 0 ? (
                     <p>Não há partidas sorteadas.</p>
                 ) : (
-                    <div className="d-flex flex-wrap justify-content-center gap-1 text-center">
+                    <div className="d-flex flex-wrap justify-content-center align-items-center gap-1 text-center">
                         <div className="w-48">
                             <h3 className="mb-4"><b>Turno 1</b></h3>
                             {rounds.slice(0, rounds.length / 2).map((round, index) => (

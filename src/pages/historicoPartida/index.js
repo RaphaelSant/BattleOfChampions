@@ -183,15 +183,17 @@ const HistoricoPartidas = () => {
             <Navbar />
 
             <div className="text-center container mt-5 d-flex flex-column" style={{ minHeight: '60vh' }}>
-                
+
                 <Breadcrumb tituloAnterior="Inserir Resultados" linkAnterior="/InserirResultados" tituloProximo="Classificação" linkProximo="/Classificacao" />
 
                 <h2 className="my-4 text-success"><b>Histórico de Partidas</b></h2>
 
                 {/* Spinner enquanto carrega */}
                 {loading ? (
-                    <div className="spinner-border text-dark" role="status">
-                        <span className="visually-hidden">Carregando...</span>
+                    <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
+                        <div className="spinner-border text-dark" role="status">
+                            <span className="visually-hidden">Carregando...</span>
+                        </div>
                     </div>
                 ) : (
                     <>

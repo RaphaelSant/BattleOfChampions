@@ -227,7 +227,7 @@ const InserirResultados = () => {
             <Navbar />
 
             <div className="text-center container mt-5 d-flex flex-column" style={{ minHeight: '60vh' }}>
-                <Breadcrumb tituloAnterior="Sorteio de Confrontos" linkAnterior="/SorteioConfrontos" tituloProximo="Histórico de Partidas" linkProximo="/HistoricoPartidas" />
+                <Breadcrumb tituloAnterior="Sort. de Confrontos" linkAnterior="/SorteioConfrontos" tituloProximo="Hist. de Part." linkProximo="/HistoricoPartidas" />
 
                 <h2 className="my-4 text-success"><b>Inserir Resultados</b></h2>
 
