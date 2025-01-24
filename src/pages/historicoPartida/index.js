@@ -4,6 +4,8 @@ import { db } from "../../firebase";
 import Swal from "sweetalert2";
 import Navbar from "../../components/navbar";
 import Loading from "../../components/assets/loading.gif";
+import Breadcrumb from "../../components/breadcrumb";
+import Footer from "../../components/footer";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
@@ -180,8 +182,11 @@ const HistoricoPartidas = () => {
         <>
             <Navbar />
 
-            <div className="container mt-4 text-center">
-                <h2 className="mb-4">Histórico de Partidas</h2>
+            <div className="text-center container mt-5 d-flex flex-column" style={{ minHeight: '60vh' }}>
+                
+                <Breadcrumb tituloAnterior="Inserir Resultados" linkAnterior="/InserirResultados" tituloProximo="Classificação" linkProximo="/Classificacao" />
+
+                <h2 className="my-4 text-success"><b>Histórico de Partidas</b></h2>
 
                 {/* Spinner enquanto carrega */}
                 {loading ? (
@@ -358,6 +363,7 @@ const HistoricoPartidas = () => {
                     </div>
                 </div>
             )}
+            <Footer />
         </>
     );
 };

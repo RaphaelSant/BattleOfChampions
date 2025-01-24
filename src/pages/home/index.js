@@ -41,14 +41,14 @@ const Home = () => {
                             </div>
 
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowModal(false)}>Fechar</button>
+                                <button type="button" className="btn btn-secondary w-100 btn-lg" data-bs-dismiss="modal" onClick={() => setShowModal(false)}>Fechar</button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
 
-            <div className="container-fluid">
+            <div className="container-fluid d-flex flex-column min-vh-100">
                 {/* Header */}
                 <header className="text-center my-5">
                     <img

@@ -3,6 +3,8 @@ import { getDocs, collection, addDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
+import Breadcrumb from "../../components/breadcrumb";
+import Footer from "../../components/footer";
 
 const SorteioConfrontos = () => {
     const [players, setPlayers] = useState([]);
@@ -191,8 +193,12 @@ const SorteioConfrontos = () => {
     return (
         <>
             <Navbar />
-            <div className="container mt-5 text-center">
-                <h2 className="mb-4">Partidas Sorteadas</h2>
+            <div className="container mt-5 d-flex flex-column text-center" style={{ minHeight: '60vh' }}>
+                
+                <Breadcrumb tituloAnterior="Cad de Jogadores" linkAnterior="/CadastroJogadores" tituloProximo="Inserir Resultados" linkProximo="/InserirResultados" />
+                
+                <h2 className="my-4 text-success"><b>Sorteio de Confrontos</b></h2>
+                
                 {loading ? (
                     <div className="spinner-border" role="status">
                         <span className="visually-hidden">Carregando...</span>
@@ -236,14 +242,15 @@ const SorteioConfrontos = () => {
                 )}
 
                 <div className="mt-4 d-flex flex-column gap-3">
-                    <button onClick={saveAllMatches} className="btn btn-lg btn-primary me-3 w-100">
+                    <button onClick={saveAllMatches} className="btn btn-lg btn-success me-3 w-100">
                         Salvar Todos os Confrontos
                     </button>
-                    <button onClick={reshuffleMatches} className="btn btn-lg btn-secondary mt-3">
+                    <button onClick={reshuffleMatches} className="btn btn-lg btn-dark mt-3">
                         Embaralhar Novamente
                     </button>
                 </div>
             </div>
+            <Footer />
         </>
     );
 };

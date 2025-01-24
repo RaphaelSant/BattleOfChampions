@@ -4,6 +4,8 @@ import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from "sweetalert2";
 import Loading from "../../components/assets/loading.gif";
+import Breadcrumb from "../../components/breadcrumb";
+import Footer from "../../components/footer";
 
 const InserirResultados = () => {
     const [matches, setMatches] = useState([]);
@@ -224,8 +226,10 @@ const InserirResultados = () => {
         <>
             <Navbar />
 
-            <div className="container mt-5 text-center">
-                <h2 className="mb-4">Inserir Resultados das Partidas</h2>
+            <div className="text-center container mt-5 d-flex flex-column" style={{ minHeight: '60vh' }}>
+                <Breadcrumb tituloAnterior="Sorteio de Confrontos" linkAnterior="/SorteioConfrontos" tituloProximo="Histórico de Partidas" linkProximo="/HistoricoPartidas" />
+
+                <h2 className="my-4 text-success"><b>Inserir Resultados</b></h2>
 
                 {error && <p className="text-danger">{error}</p>}
 
@@ -359,6 +363,7 @@ const InserirResultados = () => {
 
                 </div>
             </div>
+            <Footer />
         </>
     );
 };

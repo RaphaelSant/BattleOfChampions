@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
+import Breadcrumb from "../../components/breadcrumb";
+import Footer from "../../components/footer";
 
 const Classificacao = () => {
     const [players, setPlayers] = useState([]); // Estado para armazenar os jogadores
@@ -43,8 +45,11 @@ const Classificacao = () => {
         <>
             <Navbar />
 
-            <div className="container mt-4">
-                <h2 className="mb-4 text-center">Classificação</h2>
+            <div className="container mt-5 d-flex flex-column" style={{ minHeight: '60vh' }}>
+
+                <Breadcrumb tituloAnterior="Histórico de Partidas" linkAnterior="/HistoricoPartidas" />
+
+                <h2 className="my-4 text-success text-center"><b>Classificação</b></h2>
 
                 {error && <p className="text-danger text-center">{error}</p>}
 
@@ -96,6 +101,7 @@ const Classificacao = () => {
                     </div>
                 )}
             </div>
+            <Footer />
         </>
     );
 };

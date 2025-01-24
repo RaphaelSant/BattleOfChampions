@@ -4,6 +4,8 @@ import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Swal from 'sweetalert2';
 import Loading from "../../components/assets/loading.gif";  // A imagem do spinner
+import Footer from "../../components/footer";
+import Breadcrumb from "../../components/breadcrumb";
 
 const CadastroJogadores = () => {
     const [name, setName] = useState("");
@@ -188,9 +190,9 @@ const CadastroJogadores = () => {
     return (
         <>
             <Navbar />
-
-            <div className="container mt-5">
-                <h1 className="mb-4">Cadastro de Jogadores</h1>
+            <div className="container mt-5 d-flex flex-column text-center" style={{ minHeight: '60vh' }}>
+                <Breadcrumb tituloAnterior="Home" linkAnterior="/Home" tituloProximo="Sorteio de Confrontos" linkProximo="/SorteioConfrontos" />
+                <h1 className="my-4 text-success"><b>Cadastro de Jogadores</b></h1>
 
                 <form
                     onSubmit={(e) => {
@@ -206,7 +208,7 @@ const CadastroJogadores = () => {
                         <input
                             type="text"
                             id="name"
-                            className="form-control"
+                            className="form-control text-center"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Digite o nome do jogador"
@@ -215,7 +217,7 @@ const CadastroJogadores = () => {
                         />
                     </div>
                     {error && <p className="text-danger">{error}</p>}
-                    <button type="submit" className="btn btn-lg btn-primary w-100" disabled={loading}>
+                    <button type="submit" className="btn btn-lg btn-success w-100" disabled={loading}>
                         {loading ? 'Cadastrando...' : 'Cadastrar Jogador'}
                     </button>
                 </form>
@@ -246,6 +248,7 @@ const CadastroJogadores = () => {
                     </ul>
                 )}
             </div>
+            <Footer />
         </>
     );
 };

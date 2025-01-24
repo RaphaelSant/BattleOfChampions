@@ -6,6 +6,11 @@ import Logo from "../assets/logo.png";
 import Swal from "sweetalert2"; // Importando o SweetAlert
 import Loading from "../assets/loading.gif";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth"; // Importando updatePassword
+import { BsPersonFillAdd } from "react-icons/bs";
+import { FaWandMagicSparkles } from "react-icons/fa6";
+import { HiSearchCircle } from "react-icons/hi";
+import { TbViewfinder } from "react-icons/tb";
+import { GiPodiumWinner } from "react-icons/gi";
 
 const Navbar = () => {
     const [userName, setUserName] = useState(null);
@@ -22,18 +27,36 @@ const Navbar = () => {
                 }
             };
             getUserData();
-            console.log(userName);
+            // console.log(userName);
         }
     }, [userName]);
 
     const handleLogout = () => {
-        signOut(auth)
-            .then(() => {
-                navigate("/"); // Redireciona para a página de login
-            })
-            .catch((error) => {
-                console.error("Erro ao sair: ", error);
-            });
+        Swal.fire({
+            title: 'Você tem certeza?',
+            text: "Se você sair, precisará fazer login novamente!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, sair',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: "btn btn-lg btn-success mb-4 w-100",
+                cancelButton: "btn btn-lg btn-dark w-100"
+            },
+            buttonsStyling: false,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                signOut(auth)
+                    .then(() => {
+                        navigate("/"); // Redireciona para a página de login
+                    })
+                    .catch((error) => {
+                        console.error("Erro ao sair: ", error);
+                    });
+            } else {
+                console.log("Logout cancelado");
+            }
+        });
     };
 
     const handlePasswordChange = () => {
@@ -185,7 +208,7 @@ const Navbar = () => {
             <div className="container">
                 <Link className="navbar-brand" to="/Home">
                     <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', marginRight: '10px' }} />
-                    Battle of Champions
+                    BoC
                 </Link>
                 <button
                     className="navbar-toggler"
@@ -198,36 +221,37 @@ const Navbar = () => {
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
-                <div className="collapse navbar-collapse" id="navbarNav">
+                <div className="collapse navbar-collapse text-center" id="navbarNav">
                     <ul className="navbar-nav ms-auto">
-                        <li className="nav-item">
+                        {/* Links para Desktop */}
+                        <li className="nav-item d-none d-lg-block">
                             <Link className="nav-link" to="/CadastroJogadores">
-                                Cadastro de Jogadores
+                                <BsPersonFillAdd /> Cadastro de Jogadores
                             </Link>
                         </li>
-                        <li className="nav-item">
+                        <li className="nav-item d-none d-lg-block">
                             <Link className="nav-link" to="/SorteioConfrontos">
-                                Sorteio de Confrontos
+                                <FaWandMagicSparkles /> Sorteio de Confrontos
                             </Link>
                         </li>
-                        <li className="nav-item">
+                        <li className="nav-item d-none d-lg-block">
                             <Link className="nav-link" to="/InserirResultados">
-                                Inserir Resultados
+                                <TbViewfinder /> Inserir Resultados
                             </Link>
                         </li>
-                        <li className="nav-item">
+                        <li className="nav-item d-none d-lg-block">
                             <Link className="nav-link" to="/HistoricoPartidas">
-                                Histórico de Partidas
+                                <HiSearchCircle /> Histórico de Partidas
                             </Link>
                         </li>
-                        <li className="nav-item">
+                        <li className="nav-item d-none d-lg-block border-end">
                             <Link className="nav-link" to="/Classificacao">
-                                Classificação
+                                <GiPodiumWinner /> Classificação
                             </Link>
                         </li>
 
-                        {/* Dropdown Sistema */}
-                        <li className="nav-item dropdown">
+                        {/* Dropdown Sistema (somente para desktop) */}
+                        <li className="nav-item dropdown d-none d-lg-block">
                             <button
                                 className="nav-link dropdown-toggle"
                                 id="navbarDropdown"
@@ -248,8 +272,8 @@ const Navbar = () => {
                             </ul>
                         </li>
 
-                        {/* Dropdown Usuários */}
-                        <li className="nav-item dropdown">
+                        {/* Dropdown Usuários (somente para desktop) */}
+                        <li className="nav-item dropdown d-none d-lg-block">
                             <button
                                 className="nav-link dropdown-toggle"
                                 id="navbarDropdown"
@@ -271,10 +295,85 @@ const Navbar = () => {
                                 </li>
                             </ul>
                         </li>
+
+                        {/* Botões para Mobile */}
+                        <li className="nav-item d-block d-lg-none mb-2">
+                            <Link className="btn btn-outline-light w-100" to="/CadastroJogadores">
+                                <BsPersonFillAdd /> Cadastro de Jogadores
+                            </Link>
+                        </li>
+                        <li className="nav-item d-block d-lg-none mb-2">
+                            <Link className="btn btn-outline-light w-100" to="/SorteioConfrontos">
+                                <FaWandMagicSparkles /> Sorteio de Confrontos
+                            </Link>
+                        </li>
+                        <li className="nav-item d-block d-lg-none mb-2">
+                            <Link className="btn btn-outline-light w-100" to="/InserirResultados">
+                                <TbViewfinder /> Inserir Resultados
+                            </Link>
+                        </li>
+                        <li className="nav-item d-block d-lg-none mb-2">
+                            <Link className="btn btn-outline-light w-100" to="/HistoricoPartidas">
+                                <HiSearchCircle /> Histórico de Partidas
+                            </Link>
+                        </li>
+                        <li className="nav-item d-block d-lg-none mb-2">
+                            <Link className="btn btn-outline-light w-100" to="/Classificacao">
+                                <GiPodiumWinner /> Classificação
+                            </Link>
+                        </li>
+
+                        {/* Dropdown para mobile */}
+                        <li className="nav-item dropdown d-block d-lg-none mb-2">
+                            <button
+                                className="btn btn-outline-light w-100 dropdown-toggle"
+                                id="navbarDropdown"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                Sistema
+                            </button>
+                            <ul className="dropdown-menu" aria-labelledby="navbarDropdownSistema">
+                                <li>
+                                    <button
+                                        className="dropdown-item text-danger"
+                                        onClick={handleResetSystem}
+                                    >
+                                        Resetar Sistema
+                                    </button>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li className="nav-item dropdown d-block d-lg-none mb-2">
+                            <button
+                                className="btn btn-outline-light w-100 dropdown-toggle"
+                                id="navbarDropdown"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                Usuários
+                            </button>
+                            <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li>
+                                    <button className="dropdown-item" onClick={handlePasswordChange}>
+                                        Alterar Senha
+                                    </button>
+                                </li>
+                                <li>
+                                    <button className="dropdown-item" onClick={handleLogout}>
+                                        Sair
+                                    </button>
+                                </li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>
         </nav>
+
+
+
     );
 };
 
