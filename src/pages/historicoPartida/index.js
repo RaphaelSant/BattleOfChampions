@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../../firebase";
 import Swal from "sweetalert2";
 import Navbar from "../../components/navbar";
@@ -40,6 +40,41 @@ const HistoricoPartidas = () => {
         fetchHistorico();
     }, []);
 
+    // Função para resetar os resultados de todos os players
+    const resetPlayerStats = async () => {
+        const playersRef = collection(db, "players");
+        const querySnapshot = await getDocs(playersRef);
+
+        // Para cada jogador, zerar as estatísticas
+        querySnapshot.forEach(async (playerDoc) => {
+            const playerRef = doc(playersRef, playerDoc.id);
+            await updateDoc(playerRef, {
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                goalsFor: 0,
+                goalsAgainst: 0,
+                goalDifference: 0,
+                points: 0,
+            });
+        });
+    };
+
+    // Função para recalcular as estatísticas com base nas partidas
+    const recalculateStats = async () => {
+        const matchesRef = collection(db, "matches");
+        const querySnapshot = await getDocs(matchesRef);
+
+        // Para cada partida, atualizar as estatísticas dos jogadores envolvidos
+        querySnapshot.forEach(async (matchDoc) => {
+            const match = matchDoc.data();
+            const { player1Goals, player2Goals, idPlayer1, idPlayer2 } = match;
+
+            // Atualizar as estatísticas de ambos os jogadores com base na partida
+            await updatePlayerStats(idPlayer1, idPlayer2, player1Goals, player2Goals);
+        });
+    };
+
     // Função para agrupar partidas por turno
     const groupByTurn = (matches) => {
         return matches.reduce((acc, match) => {
@@ -52,30 +87,30 @@ const HistoricoPartidas = () => {
         }, {});
     };
 
-    // Função para calcular e atualizar o resultado dos jogadores
+    // Função para calcular e atualizar as estatísticas dos jogadores
     const updatePlayerStats = async (player1Id, player2Id, player1Goals, player2Goals) => {
         const playersRef = collection(db, "players");
 
         const player1Ref = doc(playersRef, player1Id);
         await updateDoc(player1Ref, {
-            goalsFor: player1Goals,
-            goalsAgainst: player2Goals,
-            goalDifference: player1Goals - player2Goals,
-            wins: player1Goals > player2Goals ? 1 : 0,
-            losses: player1Goals < player2Goals ? 1 : 0,
-            draws: player1Goals === player2Goals ? 1 : 0,
-            points: player1Goals > player2Goals ? 3 : player1Goals < player2Goals ? 0 : 1,
+            goalsFor: increment(player1Goals),
+            goalsAgainst: increment(player2Goals),
+            goalDifference: increment(player1Goals - player2Goals),
+            wins: increment(player1Goals > player2Goals ? 1 : 0),
+            losses: increment(player1Goals < player2Goals ? 1 : 0),
+            draws: increment(player1Goals === player2Goals ? 1 : 0),
+            points: increment(player1Goals > player2Goals ? 3 : player1Goals < player2Goals ? 0 : 1),
         });
 
         const player2Ref = doc(playersRef, player2Id);
         await updateDoc(player2Ref, {
-            goalsFor: player2Goals,
-            goalsAgainst: player1Goals,
-            goalDifference: player2Goals - player1Goals,
-            wins: player2Goals > player1Goals ? 1 : 0,
-            losses: player2Goals < player1Goals ? 1 : 0,
-            draws: player2Goals === player1Goals ? 1 : 0,
-            points: player2Goals > player1Goals ? 3 : player2Goals < player1Goals ? 0 : 1,
+            goalsFor: increment(player2Goals),
+            goalsAgainst: increment(player1Goals),
+            goalDifference: increment(player2Goals - player1Goals),
+            wins: increment(player2Goals > player1Goals ? 1 : 0),
+            losses: increment(player2Goals < player1Goals ? 1 : 0),
+            draws: increment(player2Goals === player1Goals ? 1 : 0),
+            points: increment(player2Goals > player1Goals ? 3 : player2Goals < player1Goals ? 0 : 1),
         });
     };
 
@@ -83,6 +118,7 @@ const HistoricoPartidas = () => {
         setEditMatch(match); // Definir a partida a ser editada
     };
 
+    // Função para salvar as edições de partidas
     const handleSaveEdit = async () => {
         if (editMatch) {
             // Antes de iniciar a atualização, abre o SweetAlert2 com um spinner
@@ -98,10 +134,10 @@ const HistoricoPartidas = () => {
                 }
             });
 
-            const { id, player1, player2, idPlayer1, idPlayer2 } = editMatch;
+            const { id, player1, player2 } = editMatch;
 
             try {
-                // Atualizar a partida no Firebase
+                // Atualizar a partida no Firebase antes de recalcular as estatísticas
                 const matchRef = doc(db, "matches", id);
                 await updateDoc(matchRef, {
                     player1Goals: editMatch.player1Goals,
@@ -113,8 +149,11 @@ const HistoricoPartidas = () => {
                             : "EMPATE",
                 });
 
-                // Atualizar as estatísticas dos jogadores
-                await updatePlayerStats(idPlayer1, idPlayer2, editMatch.player1Goals, editMatch.player2Goals);
+                // Resetar as estatísticas de todos os jogadores
+                await resetPlayerStats();
+
+                // Recalcular as estatísticas após zerar
+                await recalculateStats();
 
                 // Após salvar, fecha o modal e mostra a confirmação
                 Swal.close(); // Fecha o SweetAlert
