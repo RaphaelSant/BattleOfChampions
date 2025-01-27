@@ -47,9 +47,10 @@ const Login = () => {
             }}
         >
             <div
-                className="input-group-lg col-md-4 col-lg-3 col-sm-6 p-4 border w-100 rounded shadow-lg position-relative"
+                className="input-group-lg col-10 col-sm-8 col-md-6 col-lg-4 p-4 border w-100 rounded shadow-lg position-relative"
                 style={{
                     zIndex: 1, // Garante que o conteúdo fique acima do efeito glass
+                    maxWidth: '450px', // Limita a largura máxima do container
                 }}
             >
                 {/* Camada de fundo com efeito glass */}
@@ -116,6 +117,7 @@ const Login = () => {
                 </button>
             </div>
         </div>
+
 
     );
 };
