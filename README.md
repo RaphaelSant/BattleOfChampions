@@ -1,70 +1,140 @@
-# Getting Started with Create React App
+# Sistema de Gerenciamento de Torneios
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 📋 Sobre o Sistema
+Este é um sistema web desenvolvido para gerenciar torneios e competições, oferecendo funcionalidades para controle de jogadores, partidas e resultados. O sistema utiliza Firebase como backend para autenticação e armazenamento de dados.
 
-## Available Scripts
+# Battle of Champions
 
-In the project directory, you can run:
+## 📱 Interfaces do Sistema
 
-### `npm start`
+### Versão Mobile
+![Interface Mobile](/src/components/screenshots/mobile-interface.png)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+A versão mobile apresenta:
+- Menu hamburguer para navegação
+- Layout vertical otimizado para smartphones
+- Cards grandes com imagens ilustrativas
+- Botões em verde para ações principais
+- Navegação simplificada na parte inferior
+- Organização clara das funcionalidades:
+  - Cadastro de Jogadores
+  - Sorteio de Confrontos
+  - Inserir Resultados
+  - Histórico de Partidas
+  - Classificação
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Versão Web
+![Interface Web](/src/components/screenshots/web-interface.png)
 
-### `npm test`
+A versão desktop oferece:
+- Menu superior com todas as funcionalidades
+- Layout em grid com cards informativos
+- Logo centralizada
+- Design moderno e clean
+- Mesmas funcionalidades organizadas em formato desktop:
+  - Cadastro de Jogadores
+  - Sorteio de Confrontos
+  - Inserir Resultados
+  - Histórico de Partidas
+  - Classificação
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🚀 Funcionalidades Principais
 
-### `npm run build`
+### Gestão de Acesso
+- Sistema de login utilizando Firebase Authentication
+- Rotas protegidas para garantir a segurança das operações
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Módulos do Sistema
+1. **Cadastro de Jogadores**
+   - Interface para registro e gestão de participantes
+   - Armazenamento de estatísticas individuais
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Sorteio de Confrontos**
+   - Ferramenta para organização automática das partidas
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Gestão de Resultados**
+   - Interface para inserção dos resultados das partidas
+   - Acompanhamento do histórico de partidas realizadas
 
-### `npm run eject`
+4. **Classificação**
+   - Visualização da classificação geral dos participantes
+   - Estatísticas detalhadas de desempenho
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🛠️ Tecnologias Utilizadas
+- React
+- React Router DOM para gerenciamento de rotas
+- Firebase
+  - Authentication para autenticação
+  - Firestore para banco de dados
+- Variáveis de ambiente (.env)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 📊 Estrutura do Banco de Dados
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Coleção 'matches'
+```
+{
+    idPlayer1: string,
+    idPlayer2: string,
+    player1: string,
+    player1Goals: number,
+    player2: string,
+    player2Goals: number,
+    result: string,
+    round: number,
+    turno: number
+}
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Coleção 'players'
+```
+{
+    draws: number,
+    goalDifference: number,
+    goalsAgainst: number,
+    goalsFor: number,
+    losses: number,
+    name: string,
+    points: number,
+    wins: number
+}
+```
 
-## Learn More
+## 🔐 Configuração do Ambiente
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Variáveis de Ambiente
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+```
+REACT_APP_FIREBASE_API_KEY=sua_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=seu_auth_domain
+REACT_APP_FIREBASE_PROJECT_ID=seu_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=seu_storage_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id
+REACT_APP_FIREBASE_APP_ID=seu_app_id
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📌 Estrutura de Páginas
+- `/` - Página de Login (acesso público)
+- `/Home` - Página inicial (acesso restrito)
+- `/CadastroJogadores` - Gestão de jogadores
+- `/SorteioConfrontos` - Organização de partidas
+- `/InserirResultados` - Registro de resultados
+- `/HistoricoPartidas` - Histórico de jogos
+- `/Classificacao` - Tabela de classificação
 
-### Code Splitting
+## 💻 Requisitos do Sistema
+Para executar o sistema, é necessário ter instalado:
+- Node.js
+- NPM ou Yarn
+- React
+- React Router DOM
+- Firebase
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🚀 Como Executar
+1. Clone o repositório
+2. Instale as dependências com `npm install`
+3. Configure o arquivo `.env` com suas credenciais do Firebase
+4. Execute o projeto com `npm start`
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## ⚠️ Observações
+- Mantenha o arquivo `.env` seguro e nunca o compartilhe publicamente
+- Certifique-se de configurar as regras de segurança adequadas no Firebase
