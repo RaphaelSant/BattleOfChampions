@@ -143,15 +143,7 @@ npm start
 - ✅ Certifique-se de seguir a ordem das etapas para o correto funcionamento
 - 💾 Todos os dados são salvos automaticamente
 - 🔄 Mantenha o navegador atualizado para melhor experiência
-- ❓ Em caso de dúvidas, consulte este guia
-
-## 🤝 Contribuição
-
-1. 🔀 Faça um fork do projeto
-2. 🌿 Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. ⬆️ Push para a branch (`git push origin feature/AmazingFeature`)
-5. 🎯 Abra um Pull Request
+- ❓ Em caso de dúvidas ou interesses, raphael.sant.emp@gmail.com
 
 ## 👨‍💻 Autores
 
