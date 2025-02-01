@@ -1,77 +1,85 @@
-# Sistema de Gerenciamento de Torneios
+# Battle of Champions ⚽ 🏆
 
-## 📋 Sobre o Sistema
-Este é um sistema web desenvolvido para gerenciar torneios e competições, oferecendo funcionalidades para controle de jogadores, partidas e resultados. O sistema utiliza Firebase como backend para autenticação e armazenamento de dados.
+Bem-vindo à melhor competição de futebol! 🌟
 
-# Battle of Champions
+Battle of Champions é um sistema de gerenciamento de competições de futebol de 2 rodadas de pontos corridos, disponível em versões web e mobile, projetado para organizar torneios de maneira simples e eficiente.
 
 ## 📱 Interfaces do Sistema
 
-### Versão Mobile
+O sistema possui duas interfaces principais:
+
+### 📱 Mobile
 ![Interface Mobile](/src/components/screenshots/mobile-interface.png)
 
-A versão mobile apresenta:
-- Menu hamburguer para navegação
-- Layout vertical otimizado para smartphones
-- Cards grandes com imagens ilustrativas
-- Botões em verde para ações principais
-- Navegação simplificada na parte inferior
-- Organização clara das funcionalidades:
-  - Cadastro de Jogadores
-  - Sorteio de Confrontos
-  - Inserir Resultados
-  - Histórico de Partidas
-  - Classificação
+- Design otimizado para smartphones
+- Navegação intuitiva
+- Menu hamburguer
+- Botões adaptados para touch
 
-### Versão Web
+### 🖥️ Web
 ![Interface Web](/src/components/screenshots/web-interface.png)
 
-A versão desktop oferece:
-- Menu superior com todas as funcionalidades
-- Layout em grid com cards informativos
-- Logo centralizada
-- Design moderno e clean
-- Mesmas funcionalidades organizadas em formato desktop:
-  - Cadastro de Jogadores
-  - Sorteio de Confrontos
-  - Inserir Resultados
-  - Histórico de Partidas
-  - Classificação
+- Layout responsivo
+- Menu superior completo
+- Interface moderna
+- Visualização em grid
 
-## 🚀 Funcionalidades Principais
+## 🎮 Guia de Utilização do Sistema
 
-### Gestão de Acesso
-- Sistema de login utilizando Firebase Authentication
-- Rotas protegidas para garantir a segurança das operações
+### 1. Cadastro de Jogadores 👥
+- Acesse a seção "Cadastro de Jogadores"
+- Registre todos os participantes do torneio
+- Cada jogador terá suas estatísticas iniciadas automaticamente
+- O cadastro é necessário para iniciar o torneio
 
-### Módulos do Sistema
-1. **Cadastro de Jogadores**
-   - Interface para registro e gestão de participantes
-   - Armazenamento de estatísticas individuais
+### 2. Sorteio de Confrontos 🎲
+- Após cadastrar todos os jogadores, vá para "Sorteio de Confrontos"
+- O sistema realizará o sorteio automático dos confrontos
+- Os confrontos serão salvos e poderão ser visualizados nesta seção
+- Cada jogador terá seus adversários definidos aleatoriamente
 
-2. **Sorteio de Confrontos**
-   - Ferramenta para organização automática das partidas
+### 3. Registro de Resultados ⚽
+- Na seção "Inserir Resultados", registre os placares das partidas
+- Insira o número de gols de cada jogador
+- O sistema atualizará automaticamente:
+  - Pontuação dos jogadores
+  - Saldo de gols
+  - Estatísticas gerais
 
-3. **Gestão de Resultados**
-   - Interface para inserção dos resultados das partidas
-   - Acompanhamento do histórico de partidas realizadas
+### 4. Correção de Resultados 📝
+- Caso necessite corrigir algum resultado, acesse "Histórico de Partidas"
+- Localize a partida que precisa ser corrigida
+- Faça a alteração necessária
+- O sistema recalculará automaticamente todas as estatísticas
 
-4. **Classificação**
-   - Visualização da classificação geral dos participantes
-   - Estatísticas detalhadas de desempenho
+### 5. Acompanhamento da Classificação 🏆
+- A seção "Classificação" pode ser consultada a qualquer momento
+- Visualize em tempo real:
+  - Pontuação atual
+  - Número de vitórias
+  - Número de derrotas
+  - Empates
+  - Saldo de gols
+  - Gols marcados e sofridos
+
+### 6. Novo Torneio 🔄
+- Para iniciar um novo torneio, acesse o menu "Sistema"
+- Utilize a opção de Reset para zerar todas as estatísticas
+- ⚠️ Atenção: Esta ação não pode ser desfeita
+- Após o reset, o sistema estará pronto para um novo torneio
 
 ## 🛠️ Tecnologias Utilizadas
-- React
-- React Router DOM para gerenciamento de rotas
-- Firebase
-  - Authentication para autenticação
-  - Firestore para banco de dados
-- Variáveis de ambiente (.env)
+
+- ⚛️ React (Web)
+- 📱 React Native (Mobile)
+- 🔥 Firebase (Backend)
+  - 🔐 Authentication
+  - 💾 Firestore
 
 ## 📊 Estrutura do Banco de Dados
 
-### Coleção 'matches'
-```
+### 📝 Coleção 'matches'
+```javascript
 {
     idPlayer1: string,
     idPlayer2: string,
@@ -85,8 +93,8 @@ A versão desktop oferece:
 }
 ```
 
-### Coleção 'players'
-```
+### 👥 Coleção 'players'
+```javascript
 {
     draws: number,
     goalDifference: number,
@@ -99,42 +107,52 @@ A versão desktop oferece:
 }
 ```
 
-## 🔐 Configuração do Ambiente
+## ⚙️ Configuração
 
-### Variáveis de Ambiente
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+1. Clone o repositório
+2. Instale as dependências:
+```bash
+npm install
 ```
-REACT_APP_FIREBASE_API_KEY=sua_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=seu_auth_domain
-REACT_APP_FIREBASE_PROJECT_ID=seu_project_id
-REACT_APP_FIREBASE_STORAGE_BUCKET=seu_storage_bucket
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id
-REACT_APP_FIREBASE_APP_ID=seu_app_id
+3. Configure as variáveis de ambiente no arquivo `.env`:
+```
+REACT_APP_FIREBASE_API_KEY=
+REACT_APP_FIREBASE_AUTH_DOMAIN=
+REACT_APP_FIREBASE_PROJECT_ID=
+REACT_APP_FIREBASE_STORAGE_BUCKET=
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
+REACT_APP_FIREBASE_APP_ID=
+```
+4. Execute o projeto:
+```bash
+npm start
 ```
 
-## 📌 Estrutura de Páginas
-- `/` - Página de Login (acesso público)
-- `/Home` - Página inicial (acesso restrito)
-- `/CadastroJogadores` - Gestão de jogadores
-- `/SorteioConfrontos` - Organização de partidas
-- `/InserirResultados` - Registro de resultados
-- `/HistoricoPartidas` - Histórico de jogos
-- `/Classificacao` - Tabela de classificação
+## 💻 Requisitos
 
-## 💻 Requisitos do Sistema
-Para executar o sistema, é necessário ter instalado:
+### 👨‍💻 Desenvolvimento
 - Node.js
 - NPM ou Yarn
-- React
-- React Router DOM
-- Firebase
+- Firebase CLI
 
-## 🚀 Como Executar
-1. Clone o repositório
-2. Instale as dependências com `npm install`
-3. Configure o arquivo `.env` com suas credenciais do Firebase
-4. Execute o projeto com `npm start`
+### 👥 Usuários
+- 🌐 Web: Navegador moderno
+- 📱 Mobile: Android 5.0+ ou iOS 11+
 
-## ⚠️ Observações
-- Mantenha o arquivo `.env` seguro e nunca o compartilhe publicamente
-- Certifique-se de configurar as regras de segurança adequadas no Firebase
+## ⚠️ Observações Importantes
+- ✅ Certifique-se de seguir a ordem das etapas para o correto funcionamento
+- 💾 Todos os dados são salvos automaticamente
+- 🔄 Mantenha o navegador atualizado para melhor experiência
+- ❓ Em caso de dúvidas, consulte este guia
+
+## 🤝 Contribuição
+
+1. 🔀 Faça um fork do projeto
+2. 🌿 Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. 💾 Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. ⬆️ Push para a branch (`git push origin feature/AmazingFeature`)
+5. 🎯 Abra um Pull Request
+
+## 👨‍💻 Autores
+
+© 2025 Santiago, Inc. 🏢
