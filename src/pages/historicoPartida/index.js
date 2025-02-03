@@ -6,6 +6,9 @@ import Navbar from "../../components/navbar";
 import Loading from "../../components/assets/loading.gif";
 import Breadcrumb from "../../components/breadcrumb";
 import Footer from "../../components/footer";
+import { FaCheckCircle } from "react-icons/fa";
+import { IoMdCloseCircle } from "react-icons/io";
+import { PiEqualsFill } from "react-icons/pi";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
@@ -262,8 +265,28 @@ const HistoricoPartidas = () => {
                                                     {groupedMatches["Turno 1"].map((match) => (
                                                         <tr key={match.id} className="align-middle">
                                                             <td>{match.round + 1}</td>
-                                                            <td>{match.player1}</td>
-                                                            <td>{match.player2}</td>
+                                                            <td>
+                                                                {match.player1Goals > match.player2Goals
+                                                                    ? <> {match.player1} <FaCheckCircle color="green" /> </>  // Exibe o jogador 1 com o ícone se ele for o vencedor
+                                                                    : match.player1Goals === match.player2Goals
+                                                                        ? <> {match.player1} <PiEqualsFill color="#ffa200" /> </>  // Exibe "EMPATE" se os gols forem iguais
+                                                                        : match.player1Goals < match.player2Goals
+                                                                            ? <> {match.player1} <IoMdCloseCircle color="red" /> </>  // Exibe o jogador 1 com o ícone se ele for o perdedor
+                                                                            : null  // Caso contrário, não exibe nada
+                                                                }
+                                                            </td>
+
+                                                            <td>
+                                                                {match.player2Goals > match.player1Goals
+                                                                    ? <> {match.player2} <FaCheckCircle color="green" /> </>  // Exibe o jogador 1 com o ícone se ele for o vencedor
+                                                                    : match.player2Goals === match.player1Goals
+                                                                        ? <> {match.player2} <PiEqualsFill color="#ffa200" /> </>  // Exibe "EMPATE" se os gols forem iguais
+                                                                        : match.player2Goals < match.player1Goals
+                                                                            ? <> {match.player2} <IoMdCloseCircle color="red" /> </>  // Exibe o jogador 1 com o ícone se ele for o perdedor
+                                                                            : null  // Caso contrário, não exibe nada
+                                                                }
+                                                            </td>
+
                                                             <td>{match.player1Goals}</td>
                                                             <td>{match.player2Goals}</td>
                                                             <td>
@@ -307,8 +330,29 @@ const HistoricoPartidas = () => {
                                                     {groupedMatches["Turno 2"].map((match) => (
                                                         <tr key={match.id} className="align-middle">
                                                             <td>{match.round + 1}</td>
-                                                            <td>{match.player1}</td>
-                                                            <td>{match.player2}</td>
+
+                                                            <td>
+                                                                {match.player1Goals > match.player2Goals
+                                                                    ? <> {match.player1} <FaCheckCircle color="green" /> </>  // Exibe o jogador 1 com o ícone se ele for o vencedor
+                                                                    : match.player1Goals === match.player2Goals
+                                                                        ? <> {match.player1} <PiEqualsFill color="#ffa200" /> </>  // Exibe "EMPATE" se os gols forem iguais
+                                                                        : match.player1Goals < match.player2Goals
+                                                                            ? <> {match.player1} <IoMdCloseCircle color="red" /> </>  // Exibe o jogador 1 com o ícone se ele for o perdedor
+                                                                            : null  // Caso contrário, não exibe nada
+                                                                }
+                                                            </td>
+
+                                                            <td>
+                                                                {match.player2Goals > match.player1Goals
+                                                                    ? <> {match.player2} <FaCheckCircle color="green" /> </>  // Exibe o jogador 1 com o ícone se ele for o vencedor
+                                                                    : match.player2Goals === match.player1Goals
+                                                                        ? <> {match.player2} <PiEqualsFill color="#ffa200" /> </>  // Exibe "EMPATE" se os gols forem iguais
+                                                                        : match.player2Goals < match.player1Goals
+                                                                            ? <> {match.player2} <IoMdCloseCircle color="red" /> </>  // Exibe o jogador 1 com o ícone se ele for o perdedor
+                                                                            : null  // Caso contrário, não exibe nada
+                                                                }
+                                                            </td>
+                                                            
                                                             <td>{match.player1Goals}</td>
                                                             <td>{match.player2Goals}</td>
                                                             <td>
