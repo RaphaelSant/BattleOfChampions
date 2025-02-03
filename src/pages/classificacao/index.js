@@ -4,7 +4,26 @@ import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Breadcrumb from "../../components/breadcrumb";
 import Footer from "../../components/footer";
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Legend } from 'recharts';
+import {
+    Chart as ChartJS,
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+
+import { Radar } from 'react-chartjs-2';
+
+ChartJS.register(
+    RadialLinearScale,
+    PointElement,
+    LineElement,
+    Filler,
+    Tooltip,
+    Legend
+);
 
 const Classificacao = () => {
     const [players, setPlayers] = useState([]); // Estado para armazenar os jogadores
@@ -42,15 +61,30 @@ const Classificacao = () => {
         fetchPlayers();
     }, []);
 
-    // Prepara os dados para o gráfico de radar
-    const chartData = players.map((player) => ({
-        name: player.name,
-        wins: player.wins,
-        draws: player.draws,
-        losses: player.losses,
-        goalsFor: player.goalsFor,
-        goalsAgainst: player.goalsAgainst,
-    }));
+    // Função para gerar uma cor aleatória em formato rgba
+    const gerarCorAleatoria = () => {
+        const r = Math.floor(Math.random() * 256); // Valor aleatório para o componente vermelho (0-255)
+        const g = Math.floor(Math.random() * 256); // Valor aleatório para o componente verde (0-255)
+        const b = Math.floor(Math.random() * 256); // Valor aleatório para o componente azul (0-255)
+        return `rgba(${r}, ${g}, ${b}, 1)`; // Retorna a cor no formato rgba
+    };
+
+    const grafico = {
+        labels: ['VITÓRIAS', 'EMPATES', 'DERROTAS', 'GOLS MARCADOS', 'GOLS CONTRA'], // Categorias (VIT, EMP, DER, GM, GC)
+        datasets: players.map((player) => ({
+            label: player.name, // Nome do jogador
+            data: [
+                player.wins,          // VIT (Vitórias)
+                player.draws,         // EMP (Empates)
+                player.losses,        // DER (Derrotas)
+                player.goalsFor,      // GM (Gols Marcados)
+                player.goalsAgainst,  // GC (Gols Contra)
+            ],
+            backgroundColor: `rgba(100, 100, 100, 0)`, // Cor de fundo aleatória
+            borderColor: gerarCorAleatoria(),     // Cor da borda aleatória
+            borderWidth: 1,
+        })),
+    };
 
     return (
         <>
@@ -87,7 +121,7 @@ const Classificacao = () => {
                                     <th className="text-center align-middle">Pts</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="thead-dark">
                                 {players.length === 0 ? (
                                     <tr>
                                         <td colSpan="9" className="text-center">Não há jogadores para exibir.</td>
@@ -112,22 +146,14 @@ const Classificacao = () => {
                     </div>
                 )}
 
-                {/* Gráfico de radar das estatísticas dos jogadores */}
-                <h3 className="text-center mt-5 mb-4">Estatísticas dos Jogadores</h3>
-                <ResponsiveContainer width="100%" height={400}>
-                    <RadarChart outerRadius="80%" width={500} height={500} data={chartData}>
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="name" />
-                        <PolarRadiusAxis angle={30} domain={[0, 25]} />
-                        <Radar name="Vitórias" dataKey="wins" stroke="#28a745" fill="#28a745" fillOpacity={0.0} />
-                        <Radar name="Empates" dataKey="draws" stroke="#ffc107" fill="#ffc107" fillOpacity={0.0} />
-                        <Radar name="Derrotas" dataKey="losses" stroke="#dc3545" fill="#dc3545" fillOpacity={0.0} />
-                        <Radar name="Gols Marcados" dataKey="goalsFor" stroke="#007bff" fill="#007bff" fillOpacity={0.0} />
-                        <Radar name="Gols Contra" dataKey="goalsAgainst" stroke="#6c757d" fill="#6c757d" fillOpacity={0.0} />
-                    </RadarChart>
-                    <Legend />
-                </ResponsiveContainer>
+                <div className="d-flex flex-column justify-content-center align-items-center" Style="height: 500px">
+
+                    <Radar data={grafico} />
+
+                </div>
+
             </div>
+
             <Footer />
         </>
     );
