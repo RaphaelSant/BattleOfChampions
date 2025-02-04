@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 import { db } from "../../firebase";
 import Swal from "sweetalert2";
@@ -9,11 +9,13 @@ import Footer from "../../components/footer";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoMdCloseCircle } from "react-icons/io";
 import { PiEqualsFill } from "react-icons/pi";
+import * as echarts from "echarts";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
     const [loading, setLoading] = useState(false); // Para mostrar o spinner durante o carregamento
     const [editMatch, setEditMatch] = useState(null); // Estado para controlar a edição
+    const chartRef = useRef(null); // Referência para o gráfico
 
     // Função para buscar o histórico das partidas
     const fetchHistorico = async () => {
@@ -42,6 +44,86 @@ const HistoricoPartidas = () => {
     useEffect(() => {
         fetchHistorico();
     }, []);
+
+    // Função para calcular os pontos acumulados por jogador por rodada
+    const calcularPontosPorRodada = (historico) => {
+        const pontosPorJogador = {};
+
+        historico.forEach((match) => {
+            const { player1, player2, player1Goals, player2Goals, round } = match;
+
+            if (!pontosPorJogador[player1]) {
+                pontosPorJogador[player1] = [];
+            }
+            if (!pontosPorJogador[player2]) {
+                pontosPorJogador[player2] = [];
+            }
+
+            // Inicializa os pontos para a rodada atual
+            if (pontosPorJogador[player1].length < round + 1) {
+                pontosPorJogador[player1].push(pontosPorJogador[player1][pontosPorJogador[player1].length - 1] || 0);
+            }
+            if (pontosPorJogador[player2].length < round + 1) {
+                pontosPorJogador[player2].push(pontosPorJogador[player2][pontosPorJogador[player2].length - 1] || 0);
+            }
+
+            // Atualiza os pontos com base no resultado da partida
+            if (player1Goals > player2Goals) {
+                pontosPorJogador[player1][round] += 3;
+            } else if (player1Goals < player2Goals) {
+                pontosPorJogador[player2][round] += 3;
+            } else {
+                pontosPorJogador[player1][round] += 1;
+                pontosPorJogador[player2][round] += 1;
+            }
+        });
+
+        return pontosPorJogador;
+    };
+
+    // Função para renderizar o gráfico
+    const renderizarGrafico = useCallback(() => {
+        if (chartRef.current) {
+            const pontosPorJogador = calcularPontosPorRodada(historico);
+            const jogadores = Object.keys(pontosPorJogador);
+            const rodadas = Array.from({ length: historico.length / 2 }, (_, i) => `Rodada ${i + 1}`);
+
+            const series = jogadores.map((jogador) => ({
+                name: jogador,
+                type: "line",
+                data: pontosPorJogador[jogador],
+            }));
+
+            const option = {
+                title: {
+                    text: "Evolução dos Pontos por Rodada",
+                },
+                tooltip: {
+                    trigger: "axis",
+                },
+                legend: {
+                    data: jogadores,
+                },
+                xAxis: {
+                    type: "category",
+                    data: rodadas,
+                },
+                yAxis: {
+                    type: "value",
+                },
+                series: series,
+            };
+
+            const chart = echarts.init(chartRef.current, 'dark');
+            chart.setOption(option);
+        }
+    }, [historico]);  // Dependência: 'historico'
+
+    useEffect(() => {
+        if (historico.length > 0) {
+            renderizarGrafico();
+        }
+    }, [historico, renderizarGrafico]);
 
     // Função para resetar os resultados de todos os players
     const resetPlayerStats = async () => {
@@ -314,7 +396,7 @@ const HistoricoPartidas = () => {
                                     <>
                                         <h3 className="mt-4">Turno 2</h3>
                                         <div className="table-responsive">
-                                            <table className="table table-striped table-bordered nowrap mt-3">
+                                            <table className="table table-striped table-bordered mt-3">
                                                 <thead className="thead-dark">
                                                     <tr>
                                                         <th className="align-middle">Rodada</th>
@@ -374,6 +456,8 @@ const HistoricoPartidas = () => {
                                         </div>
                                     </>
                                 )}
+                                {/* Gráfico de Linha */}
+                                <div ref={chartRef} style={{ width: "100%", height: "400px", marginTop: "20px" }}></div>
                             </>
                         )}
                     </>
