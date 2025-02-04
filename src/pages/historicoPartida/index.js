@@ -9,7 +9,6 @@ import Footer from "../../components/footer";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoMdCloseCircle } from "react-icons/io";
 import { PiEqualsFill } from "react-icons/pi";
-import "./hist.css";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
