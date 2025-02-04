@@ -48,7 +48,7 @@ const Home = () => {
                 </div>
             )}
 
-            <div className="container-fluid d-flex flex-column min-vh-100">
+            <div className="container d-flex flex-column min-vh-100">
                 {/* Header */}
                 <header className="text-center my-5">
                     <img

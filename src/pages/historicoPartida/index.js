@@ -9,6 +9,7 @@ import Footer from "../../components/footer";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoMdCloseCircle } from "react-icons/io";
 import { PiEqualsFill } from "react-icons/pi";
+import "./hist.css";
 
 const HistoricoPartidas = () => {
     const [historico, setHistorico] = useState([]); // Estado para armazenar as partidas históricas
@@ -314,7 +315,7 @@ const HistoricoPartidas = () => {
                                     <>
                                         <h3 className="mt-4">Turno 2</h3>
                                         <div className="table-responsive">
-                                            <table className="table table-striped table-bordered mt-3">
+                                            <table className="table table-striped table-bordered nowrap mt-3">
                                                 <thead className="thead-dark">
                                                     <tr>
                                                         <th className="align-middle">Rodada</th>
@@ -352,7 +353,7 @@ const HistoricoPartidas = () => {
                                                                             : null  // Caso contrário, não exibe nada
                                                                 }
                                                             </td>
-                                                            
+
                                                             <td>{match.player1Goals}</td>
                                                             <td>{match.player2Goals}</td>
                                                             <td>
