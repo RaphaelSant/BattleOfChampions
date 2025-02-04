@@ -1,36 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import Navbar from "../../components/navbar";
 import Breadcrumb from "../../components/breadcrumb";
 import Footer from "../../components/footer";
-import {
-    Chart as ChartJS,
-    RadialLinearScale,
-    PointElement,
-    LineElement,
-    Filler,
-    Tooltip,
-    Legend,
-} from 'chart.js';
-
-import { Radar } from 'react-chartjs-2';
-
-ChartJS.register(
-    RadialLinearScale,
-    PointElement,
-    LineElement,
-    Filler,
-    Tooltip,
-    Legend
-);
+import * as echarts from 'echarts';
 
 const Classificacao = () => {
-    const [players, setPlayers] = useState([]); // Estado para armazenar os jogadores
-    const [error, setError] = useState(""); // Para mostrar possíveis erros
-    const [isLoading, setIsLoading] = useState(true); // Estado para controle de carregamento
+    const [players, setPlayers] = useState([]);
+    // const [matches, setMatches] = useState([]);
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const chartRef = useRef(null);  // Referência para o elemento do gráfico
 
-    // Função para buscar os jogadores da coleção 'players'
     const fetchPlayers = async () => {
         try {
             const querySnapshot = await getDocs(collection(db, "players"));
@@ -39,66 +21,111 @@ const Classificacao = () => {
                 playersList.push({ id: doc.id, ...doc.data() });
             });
 
-            // Ordena os jogadores pelos pontos e saldo de gols (goalDifference)
             playersList.sort((a, b) => {
                 if (b.points === a.points) {
-                    return b.goalDifference - a.goalDifference; // Se os pontos forem iguais, ordena pelo saldo de gols
+                    return b.goalDifference - a.goalDifference;
                 }
-                return b.points - a.points; // Ordena pelos pontos
+                return b.points - a.points;
             });
 
-            setPlayers(playersList); // Atualiza o estado com a lista de jogadores ordenada
+            setPlayers(playersList);
         } catch (error) {
             console.error("Erro ao buscar jogadores:", error);
             setError("Erro ao carregar a classificação. Tente novamente.");
         } finally {
-            setIsLoading(false); // Finaliza o carregamento
+            setIsLoading(false);
         }
     };
 
-    // Carregar os jogadores quando o componente for montado
+    const fetchMatches = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, "matches"));
+            const matchesList = [];
+            querySnapshot.forEach((doc) => {
+                matchesList.push(doc.data());
+            });
+            // setMatches(matchesList); // Puxa o todas as partidas
+        } catch (error) {
+            console.error("Erro ao buscar partidas:", error);
+        }
+    };
+
     useEffect(() => {
         fetchPlayers();
+        fetchMatches();
     }, []);
 
-    // Função para gerar uma cor aleatória em formato rgba
-    const gerarCorAleatoria = () => {
-        const r = Math.floor(Math.random() * 256); // Valor aleatório para o componente vermelho (0-255)
-        const g = Math.floor(Math.random() * 256); // Valor aleatório para o componente verde (0-255)
-        const b = Math.floor(Math.random() * 256); // Valor aleatório para o componente azul (0-255)
-        return `rgba(${r}, ${g}, ${b}, 1)`; // Retorna a cor no formato rgba
-    };
+    // Gerar o gráfico no ECharts quando os jogadores são carregados
+    useEffect(() => {
+        if (players.length > 0 && chartRef.current) {
+            const myChart = echarts.init(chartRef.current, 'dark');
 
-    const grafico = {
-        labels: ['VITÓRIAS', 'EMPATES', 'DERROTAS', 'GOLS MARCADOS', 'GOLS CONTRA'], // Categorias (VIT, EMP, DER, GM, GC)
-        datasets: players.map((player) => ({
-            label: player.name, // Nome do jogador
-            data: [
-                player.wins,          // VIT (Vitórias)
-                player.draws,         // EMP (Empates)
-                player.losses,        // DER (Derrotas)
-                player.goalsFor,      // GM (Gols Marcados)
-                player.goalsAgainst,  // GC (Gols Contra)
-            ],
-            backgroundColor: `rgba(100, 100, 100, 0)`, // Cor de fundo aleatória
-            borderColor: gerarCorAleatoria(),     // Cor da borda aleatória
-            borderWidth: 1,
-        })),
-    };
+            // Dados para o gráfico radar
+            const indicators = [
+                { name: 'VIT', max: Math.max(...players.map(p => p.wins)) },
+                { name: 'E', max: Math.max(...players.map(p => p.draws)) },
+                { name: 'DER', max: Math.max(...players.map(p => p.losses)) },
+                { name: 'GM', max: Math.max(...players.map(p => p.goalsFor)) },
+                { name: 'GC', max: Math.max(...players.map(p => p.goalsAgainst)) },
+            ];
+
+            const seriesData = players.map(player => ({
+                value: [
+                    player.wins,
+                    player.draws,
+                    player.losses,
+                    player.goalsFor,
+                    player.goalsAgainst
+                ],
+                name: player.name,
+            }));
+
+            const option = {
+                title: {
+                    text: 'Estatísticas dos Jogadores',
+                    left: 'center',
+                },
+                radar: {
+                    indicator: indicators,
+                    shape: 'exagonal',
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(255, 255, 255, 0.2)',
+                        },
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(255, 255, 255, 0.2)',
+                        },
+                    },
+                    // Remova ou ajuste esta parte para evitar problemas de legibilidade
+                    // alignTicks: true, 
+                },
+                legend: {
+                    data: players.map(player => player.name),
+                    bottom: 10,
+                },
+                series: [
+                    {
+                        type: 'radar',
+                        data: seriesData,
+                    },
+                ],
+            };
+
+            myChart.setOption(option);
+        }
+    }, [players]);
 
     return (
         <>
             <Navbar />
-
             <div className="container mt-5 d-flex flex-column" style={{ minHeight: '60vh' }}>
-
                 <Breadcrumb tituloAnterior="Histórico de Partidas" linkAnterior="/HistoricoPartidas" />
-
                 <h2 className="my-4 text-success text-center"><b>Classificação</b></h2>
 
                 {error && <p className="text-danger text-center">{error}</p>}
 
-                {/* Spinner exibido enquanto os dados estão sendo carregados */}
                 {isLoading ? (
                     <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
                         <div className="spinner-border text-dark" role="status">
@@ -129,7 +156,7 @@ const Classificacao = () => {
                                 ) : (
                                     players.map((player, index) => (
                                         <tr key={player.id}>
-                                            <td className="text-center align-middle">{index + 1}</td> {/* Posição na tabela */}
+                                            <td className="text-center align-middle">{index + 1}</td>
                                             <td className="text-center align-middle">{player.name}</td>
                                             <td className="text-center align-middle">{player.wins}</td>
                                             <td className="text-center align-middle">{player.draws}</td>
@@ -146,14 +173,11 @@ const Classificacao = () => {
                     </div>
                 )}
 
-                <div className="d-flex flex-column justify-content-center align-items-center" Style="height: 500px">
-
-                    <Radar data={grafico} />
-
+                <div className="d-flex flex-column justify-content-center align-items-center" style={{ height: "500px" }}>
+                    <div ref={chartRef} style={{ width: '100%', height: '500px' }} />
                 </div>
 
             </div>
-
             <Footer />
         </>
     );
